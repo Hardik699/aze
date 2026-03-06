@@ -97,24 +97,18 @@ function numberToWords(num: number): string {
   return convert(num) + " Rupees only";
 }
 
-function cleanElementForExport(element: HTMLElement): void {
-  // Set white background and black text on wrapper
-  element.style.backgroundColor = '#ffffff !important';
-  element.style.color = '#000000 !important';
-  
-  // Remove dark theme styles from all children
-  const allElements = element.querySelectorAll('*');
-  allElements.forEach((el) => {
-    const htmlEl = el as HTMLElement;
-    htmlEl.style.backgroundColor = '#ffffff';
-    htmlEl.style.color = '#000000';
-  });
-}
-
 export default function PayslipPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { record, employee } = location.state || {};
+
+  console.log('=== PAYSLIP PAGE ===');
+  console.log('Received record:', record);
+  console.log('Leave data in record:', {
+    PL: { total: record?.plTotal, availed: record?.plAvailed, subsisting: record?.plSubsisting, lwp: record?.plLwp },
+    CL: { total: record?.clTotal, availed: record?.clAvailed, subsisting: record?.clSubsisting, lwp: record?.clLwp },
+    SL: { total: record?.slTotal, availed: record?.slAvailed, subsisting: record?.slSubsisting, lwp: record?.slLwp },
+  });
 
   // Build payslip data from employee and salary record
   const getPayslipData = () => {
@@ -170,12 +164,12 @@ export default function PayslipPage() {
         bankAccountNo: employee.accountNumber || "N/A",
         daysInMonth: record.totalWorkingDays || 30,
         leaves: [
-          { type: "PL", total: record.plTotal || 0, availed: record.plAvailed || 0, subsisting: record.plSubsisting || 0, lwp: record.lwp || 0 },
-          { type: "CL", total: record.clTotal || 0, availed: record.clAvailed || 0, subsisting: record.clSubsisting || 0, lwp: record.lwp || 0 },
-          { type: "SL", total: record.slTotal || 0, availed: record.slAvailed || 0, subsisting: record.slSubsisting || 0, lwp: record.lwp || 0 },
+          { type: "PL", total: record.plTotal || 0, availed: record.plAvailed || 0, subsisting: record.plSubsisting || 0, lwp: record.plLwp || 0 },
+          { type: "CL", total: record.clTotal || 0, availed: record.clAvailed || 0, subsisting: record.clSubsisting || 0, lwp: record.clLwp || 0 },
+          { type: "SL", total: record.slTotal || 0, availed: record.slAvailed || 0, subsisting: record.slSubsisting || 0, lwp: record.slLwp || 0 },
         ],
-        totalLeavesTaken: record.totalLeavesTaken || 0,
-        totalLeaveWithoutPay: record.totalLeaveWithoutPay || (record.totalWorkingDays - record.actualWorkingDays),
+        totalLeavesTaken: (record.plAvailed || 0) + (record.clAvailed || 0) + (record.slAvailed || 0),
+        totalLeaveWithoutPay: (record.plLwp || 0) + (record.clLwp || 0) + (record.slLwp || 0),
         totalPresentDays: record.actualWorkingDays,
         totalDaysPayable: record.totalWorkingDaysPayable || record.actualWorkingDays,
         earnings: [
@@ -287,7 +281,7 @@ export default function PayslipPage() {
                     return;
                   }
 
-                  // Create a wrapper with white background
+                  // Create a wrapper with white background and margins
                   const wrapper = document.createElement('div');
                   wrapper.style.position = 'absolute';
                   wrapper.style.left = '-9999px';
@@ -300,10 +294,7 @@ export default function PayslipPage() {
 
                   // Create a clone with white background
                   const clonedElement = element.cloneNode(true) as HTMLElement;
-                  
-                  // Clean the cloned element to remove dark theme styles
-                  cleanElementForExport(clonedElement);
-                  
+                  clonedElement.style.backgroundColor = '#ffffff';
                   clonedElement.style.margin = '0';
                   clonedElement.style.padding = '30px';
                   clonedElement.style.width = element.offsetWidth + 'px';
@@ -315,6 +306,8 @@ export default function PayslipPage() {
                   allCells.forEach((cell) => {
                     (cell as HTMLElement).style.verticalAlign = 'middle';
                     (cell as HTMLElement).style.textAlign = 'center';
+                    (cell as HTMLElement).style.padding = '12px';
+                    (cell as HTMLElement).style.lineHeight = '1.3';
                   });
 
                   // Add cloned element to wrapper
@@ -336,15 +329,26 @@ export default function PayslipPage() {
                   // Remove wrapper
                   document.body.removeChild(wrapper);
 
-                  // Get image data and download
-                  const imgData = canvas.toDataURL('image/png');
+                  // Composite a white background under the captured canvas to avoid transparency
+                  const finalCanvas = document.createElement('canvas');
+                  finalCanvas.width = canvas.width;
+                  finalCanvas.height = canvas.height;
+                  const fctx = finalCanvas.getContext('2d');
+                  if (fctx) {
+                    fctx.fillStyle = '#ffffff';
+                    fctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+                    fctx.drawImage(canvas, 0, 0);
+                  }
+
+                  // Get image data and download (use JPEG to avoid alpha/transparency)
+                  const imgData = finalCanvas.toDataURL('image/jpeg', 1.0);
                   const link = document.createElement('a');
                   const monthName = new Date(payslipData.year, payslipData.month - 1).toLocaleString('default', {
                     month: 'long',
                     year: 'numeric'
                   });
                   link.href = imgData;
-                  link.download = `Payslip_${monthName}.png`;
+                  link.download = `Payslip_${monthName}.jpg`;
                   document.body.appendChild(link);
                   link.click();
                   document.body.removeChild(link);
@@ -368,7 +372,7 @@ export default function PayslipPage() {
                     return;
                   }
 
-                  // Create a wrapper with white background
+                  // Create a wrapper with white background and margins
                   const wrapper = document.createElement('div');
                   wrapper.style.position = 'absolute';
                   wrapper.style.left = '-9999px';
@@ -381,10 +385,7 @@ export default function PayslipPage() {
 
                   // Create a clone with white background
                   const clonedElement = element.cloneNode(true) as HTMLElement;
-                  
-                  // Clean the cloned element to remove dark theme styles
-                  cleanElementForExport(clonedElement);
-                  
+                  clonedElement.style.backgroundColor = '#ffffff';
                   clonedElement.style.margin = '0';
                   clonedElement.style.padding = '30px';
                   clonedElement.style.width = element.offsetWidth + 'px';
@@ -396,6 +397,8 @@ export default function PayslipPage() {
                   allCells.forEach((cell) => {
                     (cell as HTMLElement).style.verticalAlign = 'middle';
                     (cell as HTMLElement).style.textAlign = 'center';
+                    (cell as HTMLElement).style.padding = '12px';
+                    (cell as HTMLElement).style.lineHeight = '1.3';
                   });
 
                   // Add cloned element to wrapper
@@ -417,8 +420,19 @@ export default function PayslipPage() {
                   // Remove wrapper
                   document.body.removeChild(wrapper);
 
-                  // Get image data and send to server for PDF generation with password
-                  const imgData = canvas.toDataURL('image/png');
+                  // Composite a white background under the captured canvas to avoid transparency
+                  const finalCanvas = document.createElement('canvas');
+                  finalCanvas.width = canvas.width;
+                  finalCanvas.height = canvas.height;
+                  const fctx = finalCanvas.getContext('2d');
+                  if (fctx) {
+                    fctx.fillStyle = '#ffffff';
+                    fctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+                    fctx.drawImage(canvas, 0, 0);
+                  }
+
+                  // Get image data and send to server for PDF generation with password (use JPEG to avoid alpha)
+                  const imgData = finalCanvas.toDataURL('image/jpeg', 1.0);
                   const imgBase64 = imgData.split(',')[1];
 
                   const monthName = new Date(payslipData.year, payslipData.month - 1).toLocaleString('default', {

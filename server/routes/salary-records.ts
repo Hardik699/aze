@@ -108,9 +108,45 @@ const getSalaryRecordsByMonth: RequestHandler = async (req, res) => {
 const createSalaryRecord: RequestHandler = async (req, res) => {
   try {
     const recordData = req.body;
+    
+    console.log('=== SERVER: Creating Salary Record ===');
+    console.log('Received data:', JSON.stringify(recordData, null, 2));
+    console.log('Leave fields:', {
+      plTotal: recordData.plTotal,
+      plAvailed: recordData.plAvailed,
+      plSubsisting: recordData.plSubsisting,
+      plLwp: recordData.plLwp,
+      clTotal: recordData.clTotal,
+      clAvailed: recordData.clAvailed,
+      clSubsisting: recordData.clSubsisting,
+      clLwp: recordData.clLwp,
+      slTotal: recordData.slTotal,
+      slAvailed: recordData.slAvailed,
+      slSubsisting: recordData.slSubsisting,
+      slLwp: recordData.slLwp,
+      lwp: recordData.lwp
+    });
 
     const record = new SalaryRecord(recordData);
     await record.save();
+    
+    console.log('=== SERVER: Record Saved Successfully ===');
+    console.log('Saved record ID:', record._id);
+    console.log('Saved leave data:', {
+      plTotal: record.plTotal,
+      plAvailed: record.plAvailed,
+      plSubsisting: record.plSubsisting,
+      plLwp: record.plLwp,
+      clTotal: record.clTotal,
+      clAvailed: record.clAvailed,
+      clSubsisting: record.clSubsisting,
+      clLwp: record.clLwp,
+      slTotal: record.slTotal,
+      slAvailed: record.slAvailed,
+      slSubsisting: record.slSubsisting,
+      slLwp: record.slLwp,
+      lwp: record.lwp
+    });
 
     res.status(201).json({
       success: true,
@@ -118,6 +154,7 @@ const createSalaryRecord: RequestHandler = async (req, res) => {
       message: "Salary record created successfully",
     });
   } catch (error: any) {
+    console.error('=== SERVER: Save Failed ===', error);
     // Handle duplicate key error
     if (error.code === 11000) {
       return res.status(400).json({
@@ -143,6 +180,25 @@ const updateSalaryRecord: RequestHandler = async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
 
+    console.log('=== SERVER: Updating Salary Record ===');
+    console.log('Record ID:', id);
+    console.log('Update data:', JSON.stringify(updateData, null, 2));
+    console.log('Leave fields in update:', {
+      plTotal: updateData.plTotal,
+      plAvailed: updateData.plAvailed,
+      plSubsisting: updateData.plSubsisting,
+      plLwp: updateData.plLwp,
+      clTotal: updateData.clTotal,
+      clAvailed: updateData.clAvailed,
+      clSubsisting: updateData.clSubsisting,
+      clLwp: updateData.clLwp,
+      slTotal: updateData.slTotal,
+      slAvailed: updateData.slAvailed,
+      slSubsisting: updateData.slSubsisting,
+      slLwp: updateData.slLwp,
+      lwp: updateData.lwp
+    });
+
     const record = await SalaryRecord.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
@@ -155,12 +211,31 @@ const updateSalaryRecord: RequestHandler = async (req, res) => {
       });
     }
 
+    console.log('=== SERVER: Record Updated Successfully ===');
+    console.log('Updated record ID:', record._id);
+    console.log('Updated leave data:', {
+      plTotal: record.plTotal,
+      plAvailed: record.plAvailed,
+      plSubsisting: record.plSubsisting,
+      plLwp: record.plLwp,
+      clTotal: record.clTotal,
+      clAvailed: record.clAvailed,
+      clSubsisting: record.clSubsisting,
+      clLwp: record.clLwp,
+      slTotal: record.slTotal,
+      slAvailed: record.slAvailed,
+      slSubsisting: record.slSubsisting,
+      slLwp: record.slLwp,
+      lwp: record.lwp
+    });
+
     res.json({
       success: true,
       data: record,
       message: "Salary record updated successfully",
     });
   } catch (error) {
+    console.error('=== SERVER: Update Failed ===', error);
     res.status(500).json({
       success: false,
       error:

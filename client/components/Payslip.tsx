@@ -65,8 +65,8 @@ export function Payslip({ data }: { data: PayslipData }) {
   const cellCenteringStyle = {
     verticalAlign: 'middle' as const,
     textAlign: 'center' as const,
-    padding: '10px 8px',
-    lineHeight: '1.2',
+    padding: '12px',
+    lineHeight: '1.3',
     fontSize: '18px',
     fontWeight: '500',
   };
@@ -82,15 +82,15 @@ export function Payslip({ data }: { data: PayslipData }) {
       <div className="w-full p-0" style={{fontFamily: '"Segoe UI", Arial, sans-serif', fontSize: '15px', backgroundColor: '#ffffff', lineHeight: '1.3'}}>
       {/* Header Section */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <div className="p-3" style={{ textAlign: 'center', width: '100%' }}>
-          <h1 style={{ fontSize: '28px', margin: '0 0 4px 0' }} className="font-bold text-black">{data.companyName}</h1>
+        <div className="p-3" style={{ textAlign: 'center', width: '100%', paddingBottom: '20px' }}>
+          <h1 style={{ fontSize: '32px', margin: '0 0 6px 0' }} className="font-bold text-black">{data.companyName}</h1>
           <p style={{ fontSize: '13px', margin: '0 0 8px 0' }} className="text-gray-700">{data.companyAddress}</p>
           <p style={{ fontSize: '16px', margin: 0 }} className="font-semibold text-black">Pay Check - {monthName}</p>
         </div>
       </div>
 
       {/* Employee Details Section */}
-      <div className="p-3">
+      <div style={{ marginTop: '24px', marginBottom: '24px', padding: '0 12px' }}>
         <table className="w-full border-collapse" style={{fontSize: '18px', fontWeight: '500', fontFamily: '"Segoe UI", Arial, sans-serif'}}>
           <tbody>
             <tr className="hover:bg-gray-50">
@@ -128,7 +128,7 @@ export function Payslip({ data }: { data: PayslipData }) {
 
       {/* Leave Details Table */}
       <div className="p-2" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '5px', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '-15px', marginBottom: '25px' }}>
           <h3 className="font-extrabold text-black" style={{ margin: 0, fontSize: '25px', textAlign: 'center' }}>Leave Details</h3>
         </div>
         <table className="w-full border-collapse" style={{fontSize: '18px', fontWeight: '500', fontFamily: '"Segoe UI", Arial, sans-serif', width: '100%', margin: '0 auto'}}>
@@ -172,7 +172,7 @@ export function Payslip({ data }: { data: PayslipData }) {
 
       {/* Salary Details Table - 5 Column Layout */}
       <div className="p-2" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '5px', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '-15px', marginBottom: '25px' }}>
           <h3 className="font-extrabold text-black" style={{ margin: 0, fontSize: '25px', textAlign: 'center' }}>Salary Details</h3>
         </div>
         <table className="w-full border-collapse" style={{fontSize: '18px', fontWeight: '500', width: '100%', margin: '0 auto'}}>
@@ -188,7 +188,7 @@ export function Payslip({ data }: { data: PayslipData }) {
           <tbody>
             {data.earnings.map((earning, idx) => (
               <tr key={`earning-${idx}`} className="hover:bg-gray-50">
-                <td className="border border-gray-700 text-black text-left" style={{...cellCenteringStyle, textAlign: 'left'}}>{earning.name}</td>
+                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{earning.name}</td>
                 <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{formatCurrency(earning.actualGross || 0)}</td>
                 <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{formatCurrency(earning.earnedGross || 0)}</td>
                 <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>
@@ -200,18 +200,18 @@ export function Payslip({ data }: { data: PayslipData }) {
               </tr>
             ))}
             <tr className="font-bold bg-gray-100">
-              <td className="border border-gray-700 text-black text-left" style={{...cellCenteringStyle, textAlign: 'left', fontWeight: 'bold'}}>Gross Earnings</td>
+              <td className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>Gross Earnings</td>
               <td className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>{formatCurrency(data.grossEarnings)}</td>
               <td className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>{formatCurrency(data.earnedGrossEarnings)}</td>
-              <td className="border border-gray-700 text-black text-left" style={{...cellCenteringStyle, textAlign: 'left', fontWeight: 'bold'}}>Deduction</td>
+              <td className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>Deduction</td>
               <td className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>{formatCurrency(data.totalDeduction)}</td>
             </tr>
             <tr className="font-bold bg-gray-100">
-              <td colSpan={3} className="border border-gray-700 text-black text-left" style={{...cellCenteringStyle, textAlign: 'left', fontWeight: 'bold'}}>Net Salary Credited</td>
+              <td colSpan={3} className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>Net Salary Credited</td>
               <td colSpan={2} className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>₹ {formatCurrency(data.netSalaryCredited)}</td>
             </tr>
             <tr>
-              <td colSpan={3} className="border border-gray-700 text-black text-left" style={{...cellCenteringStyle, textAlign: 'left', fontWeight: 'bold'}}>Amount (in words)</td>
+              <td colSpan={3} className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>Amount (in words)</td>
               <td colSpan={2} className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.amountInWords}</td>
             </tr>
           </tbody>
@@ -220,7 +220,7 @@ export function Payslip({ data }: { data: PayslipData }) {
 
       {/* Footer */}
       <div className="p-2 text-center">
-        <img src="https://cdn.builder.io/api/v1/image/assets%2F8012cbea6d4a4d528be55b21ebc4390f%2F5e57f6b47c4249638a8470815ec3ca60?format=webp&width=800&height=1200" alt="Infoseum Logo" className="mx-auto mb-2" style={{height: '60px', width: 'auto'}} />
+        <img src="https://cdn.builder.io/api/v1/image/assets%2F8012cbea6d4a4d528be55b21ebc4390f%2F5e57f6b47c4249638a8470815ec3ca60?format=webp&width=800&height=1200" alt="Infoseum Logo" className="mx-auto mb-2" style={{height: '80px', width: 'auto'}} />
         <p style={{fontSize: '13px'}} className="text-gray-600">This is a system generated slip</p>
       </div>
       </div>

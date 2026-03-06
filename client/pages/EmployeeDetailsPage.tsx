@@ -167,21 +167,21 @@ const generatePayslipPDF = async (employee: Employee, record: any) => {
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">${record.plTotal || 0.0}</td>
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">${record.plAvailed || 0.0}</td>
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">${(record.plTotal || 0) - (record.plAvailed || 0)}</td>
-            <td style="border: 1px solid #000; padding: 8px; text-align: center;">0.0</td>
+            <td style="border: 1px solid #000; padding: 8px; text-align: center;">${record.plLwp || 0.0}</td>
           </tr>
           <tr>
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">CL</td>
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">${record.clTotal || 0.0}</td>
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">${record.clAvailed || 0.0}</td>
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">${(record.clTotal || 0) - (record.clAvailed || 0)}</td>
-            <td style="border: 1px solid #000; padding: 8px; text-align: center;">0.0</td>
+            <td style="border: 1px solid #000; padding: 8px; text-align: center;">${record.clLwp || 0.0}</td>
           </tr>
           <tr>
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">SL</td>
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">${record.slTotal || 0.0}</td>
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">${record.slAvailed || 0.0}</td>
             <td style="border: 1px solid #000; padding: 8px; text-align: center;">${(record.slTotal || 0) - (record.slAvailed || 0)}</td>
-            <td style="border: 1px solid #000; padding: 8px; text-align: center;">0.0</td>
+            <td style="border: 1px solid #000; padding: 8px; text-align: center;">${record.slLwp || 0.0}</td>
           </tr>
           <tr style="border: 1px solid #000; font-weight: bold;">
             <td style="border: 1px solid #000; padding: 8px;">Total Leaves Taken -</td>
@@ -317,7 +317,18 @@ const generatePayslipPDF = async (employee: Employee, record: any) => {
     // Remove element from DOM
     document.body.removeChild(element);
 
-    const imgData = canvas.toDataURL("image/png");
+    // Composite a white background under the captured canvas to avoid transparency
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = canvas.width;
+    finalCanvas.height = canvas.height;
+    const fctx = finalCanvas.getContext('2d');
+    if (fctx) {
+      fctx.fillStyle = '#ffffff';
+      fctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+      fctx.drawImage(canvas, 0, 0);
+    }
+
+    const imgData = finalCanvas.toDataURL("image/jpeg", 1.0);
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
@@ -331,7 +342,7 @@ const generatePayslipPDF = async (employee: Employee, record: any) => {
     let heightLeft = imgHeight;
     let position = 0;
 
-    pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight);
+    pdf.addImage(imgData, "JPEG", 0, position, pageWidth, imgHeight);
     heightLeft -= pageHeight;
 
     while (heightLeft >= 0) {
@@ -830,20 +841,48 @@ export default function EmployeeDetailsPage() {
       const file = e.target.files?.[0];
       if (file) {
         try {
+          console.log(`Uploading ${docKey}, file:`, file.name, file.size, file.type);
+          
+          // Check file size (max 5MB for database storage)
+          if (file.size > 5 * 1024 * 1024) {
+            toast.error("File too large", {
+              description: "Please upload a file smaller than 5MB",
+            });
+            return;
+          }
+          
           toast.loading(`Uploading ${docKey}...`);
-          const fileUrl = await uploadFileToSupabase(
-            file,
-            `documents/${docKey.toLowerCase().replace(/\s+/g, "-")}`,
-          );
-          toast.dismiss();
-          handleEditFormChange(docKey, fileUrl);
-          toast.success("📄 Document Uploaded!", {
-            description: "Document has been successfully uploaded.",
-          });
+          
+          // Convert file to base64 and save directly in database
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64Data = event.target?.result as string;
+            console.log(`Converted ${docKey} to base64, length:`, base64Data.length);
+            
+            toast.dismiss();
+            handleEditFormChange(docKey, base64Data);
+            toast.success("📄 Document Uploaded!", {
+              description: "Document has been successfully uploaded.",
+            });
+          };
+          
+          reader.onerror = (error) => {
+            toast.dismiss();
+            console.error(`Error reading ${docKey}:`, error);
+            toast.error(`Failed to upload ${docKey}`, {
+              description: "Error reading file",
+            });
+          };
+          
+          reader.readAsDataURL(file);
+          
         } catch (error) {
           toast.dismiss();
           console.error(`Error uploading ${docKey}:`, error);
-          toast.error(`Failed to upload ${docKey}`);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          toast.error(`Failed to upload ${docKey}`, {
+            description: errorMessage,
+          });
         }
       }
     };
@@ -918,13 +957,15 @@ export default function EmployeeDetailsPage() {
 
     const bonusEarned = parseFloat(salaryForm.bonusEarned) || 0;
 
-    const totalDeductions =
-      (parseFloat(salaryForm.pf) || 0) +
-      (parseFloat(salaryForm.esic) || 0) +
-      (parseFloat(salaryForm.pt) || 0) +
-      (parseFloat(salaryForm.tds) || 0) +
-      (parseFloat(salaryForm.advanceAnyDeduction) || 0) +
-      (parseFloat(salaryForm.retention) || 0);
+    // Use deduction values from employee's personal information (not from form)
+    const pf = parseFloat(employee?.pf || "0") || 0;
+    const esic = parseFloat(employee?.esic || "0") || 0;
+    const pt = parseFloat(employee?.pt || "0") || 0;
+    const tds = parseFloat(employee?.tds || "0") || 0;
+    const advanceAnyDeduction = parseFloat(employee?.advanceAny || "0") || 0;
+    const retention = parseFloat(employee?.retention || "0") || 0;
+
+    const totalDeductions = pf + esic + pt + tds + advanceAnyDeduction + retention;
 
     const totalSalary = basicEarned + bonusEarned - totalDeductions;
 
@@ -959,27 +1000,44 @@ export default function EmployeeDetailsPage() {
       bonusEarned: parseFloat(salaryForm.bonusEarned) || 0,
       retentionBonusEarned: parseFloat(salaryForm.retentionBonusEarned) || 0,
       advanceAnyEarned: parseFloat(salaryForm.advanceAnyEarned) || 0,
-      // Individual Deductions
-      pf: parseFloat(salaryForm.pf) || 0,
-      esic: parseFloat(salaryForm.esic) || 0,
-      pt: parseFloat(salaryForm.pt) || 0,
-      tds: parseFloat(salaryForm.tds) || 0,
-      advanceAnyDeduction: parseFloat(salaryForm.advanceAnyDeduction) || 0,
-      retention: parseFloat(salaryForm.retention) || 0,
+      // Individual Deductions (from employee personal info)
+      pf: pf,
+      esic: esic,
+      pt: pt,
+      tds: tds,
+      advanceAnyDeduction: advanceAnyDeduction,
+      retention: retention,
       // Leave Details
       plTotal: parseFloat(salaryForm.plTotal) || 0,
       plAvailed: parseFloat(salaryForm.plAvailed) || 0,
       plSubsisting: parseFloat(salaryForm.plSubsisting) || 0,
-      plLwp: parseFloat(salaryForm.plLwp) || 0,
       clTotal: parseFloat(salaryForm.clTotal) || 0,
       clAvailed: parseFloat(salaryForm.clAvailed) || 0,
       clSubsisting: parseFloat(salaryForm.clSubsisting) || 0,
-      clLwp: parseFloat(salaryForm.clLwp) || 0,
       slTotal: parseFloat(salaryForm.slTotal) || 0,
       slAvailed: parseFloat(salaryForm.slAvailed) || 0,
       slSubsisting: parseFloat(salaryForm.slSubsisting) || 0,
+      plLwp: parseFloat(salaryForm.plLwp) || 0,
+      clLwp: parseFloat(salaryForm.clLwp) || 0,
       slLwp: parseFloat(salaryForm.slLwp) || 0,
+      lwp: (parseFloat(salaryForm.plLwp) || 0) + (parseFloat(salaryForm.clLwp) || 0) + (parseFloat(salaryForm.slLwp) || 0),
     };
+
+    console.log('=== SAVING SALARY RECORD ===');
+    console.log('Form data:', salaryForm);
+    console.log('Leave values being saved:', {
+      PL: { total: salaryForm.plTotal, availed: salaryForm.plAvailed, subsisting: salaryForm.plSubsisting, lwp: salaryForm.plLwp },
+      CL: { total: salaryForm.clTotal, availed: salaryForm.clAvailed, subsisting: salaryForm.clSubsisting, lwp: salaryForm.clLwp },
+      SL: { total: salaryForm.slTotal, availed: salaryForm.slAvailed, subsisting: salaryForm.slSubsisting, lwp: salaryForm.slLwp },
+      totalLwp: newRecord.lwp
+    });
+    console.log('Complete newRecord object:', newRecord);
+    console.log('LWP values in newRecord:', {
+      plLwp: newRecord.plLwp,
+      clLwp: newRecord.clLwp,
+      slLwp: newRecord.slLwp,
+      totalLwp: newRecord.lwp
+    });
 
     try {
       // Determine if we're creating or updating
@@ -1053,6 +1111,17 @@ export default function EmployeeDetailsPage() {
         id: responseData.data._id || responseData.data.id,
       };
 
+      console.log('=== SAVE SUCCESSFUL ===');
+      console.log('Saved record from server:', savedRecord);
+      console.log('Leave data in saved record:', {
+        PL: { total: savedRecord.plTotal, availed: savedRecord.plAvailed, subsisting: savedRecord.plSubsisting, lwp: savedRecord.plLwp },
+        CL: { total: savedRecord.clTotal, availed: savedRecord.clAvailed, subsisting: savedRecord.clSubsisting, lwp: savedRecord.clLwp },
+        SL: { total: savedRecord.slTotal, availed: savedRecord.slAvailed, subsisting: savedRecord.slSubsisting, lwp: savedRecord.slLwp },
+        totalLwp: savedRecord.lwp
+      });
+      console.log('Record will be added to salaryRecords state');
+      console.log('Current salaryRecords count:', salaryRecords.length);
+
       if (isUpdating) {
         // Update existing record in state
         const updatedRecords = salaryRecords.map((record) =>
@@ -1083,6 +1152,15 @@ export default function EmployeeDetailsPage() {
         bonus: "",
         retentionBonus: "",
         advanceAny: "",
+        basicEarned: "",
+        hraEarned: "",
+        conveyanceEarned: "",
+        specialAllowanceEarned: "",
+        incentiveEarned: "",
+        adjustmentEarned: "",
+        bonusEarned: "",
+        retentionBonusEarned: "",
+        advanceAnyEarned: "",
         pf: "",
         esic: "",
         pt: "",
@@ -1091,6 +1169,21 @@ export default function EmployeeDetailsPage() {
         retention: "",
         paymentDate: "",
         notes: "",
+        plTotal: "",
+        plAvailed: "",
+        plSubsisting: "",
+        plLwp: "",
+        clTotal: "",
+        clAvailed: "",
+        clSubsisting: "",
+        clLwp: "",
+        slTotal: "",
+        slAvailed: "",
+        slSubsisting: "",
+        slLwp: "",
+        totalLeavesTaken: "",
+        totalLeaveWithoutPay: "",
+        totalWorkingDaysPayable: "",
       });
       setEditingSalaryRecordId(null);
       setShowSalaryForm(false);
@@ -1271,7 +1364,7 @@ export default function EmployeeDetailsPage() {
       retention: (record as any)?.retention?.toString() || employee?.retention || "",
       paymentDate: record.paymentDate || "",
       notes: record.notes || "",
-      // Leave Details
+      // Leave Details - load individual LWP values from database
       plTotal: (record as any)?.plTotal?.toString() || "",
       plAvailed: (record as any)?.plAvailed?.toString() || "",
       plSubsisting: (record as any)?.plSubsisting?.toString() || "",
@@ -2246,7 +2339,7 @@ export default function EmployeeDetailsPage() {
                             <div>
                               <div className="text-slate-400">Total Leave Without Pay</div>
                               <div className="text-white font-medium">
-                                {(parseFloat(salaryForm.lwp) || 0).toFixed(1)}
+                                {((parseFloat(salaryForm.plLwp) || 0) + (parseFloat(salaryForm.clLwp) || 0) + (parseFloat(salaryForm.slLwp) || 0)).toFixed(1)}
                               </div>
                             </div>
                             <div>
@@ -2482,40 +2575,31 @@ export default function EmployeeDetailsPage() {
                       </div>
                     </div>
 
-                    {/* Deductions Section */}
+                    {/* Deductions Section - Read Only (from Employee Personal Info) */}
                     <div className="space-y-3">
-                      <h4 className="text-slate-200 font-semibold text-sm">Deductions</h4>
+                      <h4 className="text-slate-200 font-semibold text-sm">Deductions (From Personal Information)</h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {[
-                          { label: "PF", key: "pf" },
-                          { label: "ESIC", key: "esic" },
-                          { label: "PT", key: "pt" },
-                          { label: "TDS", key: "tds" },
-                          { label: "Advance Any", key: "advanceAnyDeduction" },
-                          { label: "Retention", key: "retention" },
+                          { label: "PF", key: "pf", value: employee?.pf || "0" },
+                          { label: "ESIC", key: "esic", value: employee?.esic || "0" },
+                          { label: "PT", key: "pt", value: employee?.pt || "0" },
+                          { label: "TDS", key: "tds", value: employee?.tds || "0" },
+                          { label: "Advance Any", key: "advanceAnyDeduction", value: employee?.advanceAny || "0" },
+                          { label: "Retention", key: "retention", value: employee?.retention || "0" },
                         ].map((field) => (
                           <div key={field.key} className="space-y-1">
                             <Label className="text-slate-300 text-xs">
                               {field.label}
                             </Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={salaryForm[field.key as keyof typeof salaryForm]}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                const numValue = parseFloat(value) || 0;
-                                setSalaryForm({
-                                  ...salaryForm,
-                                  [field.key]: numValue < 0 ? "0" : value,
-                                })
-                              }}
-                              className="bg-slate-800/50 border-slate-700 text-white text-sm"
-                              placeholder="0"
-                            />
+                            <div className="px-3 py-2 bg-slate-900/50 border border-slate-700 rounded text-slate-400 text-sm">
+                              {field.value}
+                            </div>
                           </div>
                         ))}
                       </div>
+                      <p className="text-xs text-slate-500 italic">
+                        * Deduction values are taken from employee's personal information and cannot be edited here
+                      </p>
                     </div>
 
                     {/* Payment Date and Notes */}

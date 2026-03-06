@@ -27,11 +27,19 @@ export const uploadFileToSupabase = async (
   folderPath: string,
 ): Promise<string> => {
   try {
+    console.log('Starting Supabase upload:', { fileName: file.name, folderPath, bucketName });
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error("Supabase credentials are not configured. Please check your .env file.");
+    }
+    
     const client = getSupabaseClient();
     // Create unique filename
     const timestamp = Date.now();
     const fileName = `${timestamp}-${file.name}`;
     const filePath = `${folderPath}/${fileName}`;
+
+    console.log('Uploading to path:', filePath);
 
     // Upload to Supabase Storage
     const { data, error } = await client.storage
@@ -42,14 +50,18 @@ export const uploadFileToSupabase = async (
       });
 
     if (error) {
+      console.error('Supabase upload error:', error);
       throw new Error(`Upload failed: ${error.message}`);
     }
+
+    console.log('Upload successful, getting public URL');
 
     // Get public URL
     const { data: publicUrlData } = client.storage
       .from(bucketName)
       .getPublicUrl(filePath);
 
+    console.log('Public URL:', publicUrlData.publicUrl);
     return publicUrlData.publicUrl;
   } catch (error) {
     console.error("Supabase upload error:", error);
