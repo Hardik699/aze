@@ -61,167 +61,192 @@ export function Payslip({ data }: { data: PayslipData }) {
     });
   };
 
-  // Unified centering style for all table cells
-  const cellCenteringStyle = {
-    verticalAlign: 'middle' as const,
-    textAlign: 'center' as const,
-    padding: '12px',
-    lineHeight: '1.3',
-    fontSize: '18px',
-    fontWeight: '500',
+  // Unified centering style for all table cells - darker and bolder
+  const cellCenteringStyle: React.CSSProperties = {
+    verticalAlign: 'middle',
+    textAlign: 'center',
+    padding: '14px 12px',
+    lineHeight: '1.4',
+    fontSize: '16px',
+    fontWeight: '600',
+    backgroundColor: '#ffffff',
+    color: '#000000',
   };
 
-  const headerCenteringStyle = {
+  const headerCenteringStyle: React.CSSProperties = {
     ...cellCenteringStyle,
-    fontWeight: 'bold' as const,
-    backgroundColor: '#f3f4f6', // gray-100 for better header visibility
+    fontWeight: '800',
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    fontSize: '16px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  };
+
+  const labelCellStyle: React.CSSProperties = {
+    ...cellCenteringStyle,
+    backgroundColor: '#f8fafc',
+    fontWeight: '700',
+    color: '#000000',
+  };
+
+  const totalRowStyle: React.CSSProperties = {
+    ...cellCenteringStyle,
+    backgroundColor: '#dbeafe',
+    fontWeight: '800',
+    color: '#000000',
   };
 
   return (
-    <div className="w-full p-0" style={{fontFamily: '"Segoe UI", Arial, sans-serif', lineHeight: '1.3', fontSize: '15px', backgroundColor: '#ffffff', minHeight: '100vh'}}>
-      <div className="w-full p-0" style={{fontFamily: '"Segoe UI", Arial, sans-serif', fontSize: '15px', backgroundColor: '#ffffff', lineHeight: '1.3'}}>
-      {/* Header Section */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <div className="p-3" style={{ textAlign: 'center', width: '100%', paddingBottom: '20px' }}>
-          <h1 style={{ fontSize: '32px', margin: '0 0 6px 0' }} className="font-bold text-black">{data.companyName}</h1>
-          <p style={{ fontSize: '13px', margin: '0 0 8px 0' }} className="text-gray-700">{data.companyAddress}</p>
-          <p style={{ fontSize: '16px', margin: 0 }} className="font-semibold text-black">Pay Check - {monthName}</p>
+    <div className="w-full p-0" style={{fontFamily: '"Inter", "Segoe UI", Arial, sans-serif', lineHeight: '1.5', fontSize: '15px', backgroundColor: '#ffffff', minHeight: '100vh'}}>
+      <style>{`
+        table td, table th {
+          vertical-align: middle !important;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+      `}</style>
+      <div className="w-full p-0" style={{fontFamily: '"Inter", "Segoe UI", Arial, sans-serif', fontSize: '15px', backgroundColor: '#ffffff', lineHeight: '1.5'}}>
+      
+      {/* Header Section with White Background and Blue Text */}
+      <div style={{ backgroundColor: '#ffffff', padding: '30px 20px', marginBottom: '30px', borderBottom: '4px solid #1e40af' }}>
+        <div style={{ textAlign: 'center', width: '100%' }}>
+          <h1 style={{ fontSize: '32px', margin: '0 0 8px 0', fontWeight: '800', color: '#1e40af', letterSpacing: '0.5px' }}>{data.companyName}</h1>
+          <p style={{ fontSize: '16px', margin: '0 0 12px 0', color: '#000000', lineHeight: '1.6', fontWeight: '600' }}>{data.companyAddress}</p>
+          <div style={{ display: 'inline-block', backgroundColor: '#ffffff', padding: '8px 24px', borderRadius: '6px', marginTop: '8px' }}>
+            <p style={{ fontSize: '18px', margin: 0, fontWeight: '700', color: '#3b82f6' }}>Pay Check - {monthName}</p>
+          </div>
         </div>
       </div>
 
       {/* Employee Details Section */}
-      <div style={{ marginTop: '24px', marginBottom: '24px', padding: '0 12px' }}>
-        <table className="w-full border-collapse" style={{fontSize: '18px', fontWeight: '500', fontFamily: '"Segoe UI", Arial, sans-serif'}}>
+      <div style={{ marginBottom: '30px', padding: '0 20px' }}>
+        <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#1e40af', marginBottom: '16px', borderBottom: '3px solid #3b82f6', paddingBottom: '8px' }}>Employee Information</h2>
+        <table className="w-full border-collapse" style={{fontSize: '16px', fontWeight: '600', fontFamily: '"Inter", "Segoe UI", Arial, sans-serif', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
           <tbody>
-            <tr className="hover:bg-gray-50">
-              <td className="border border-gray-700 text-black font-bold text-center" style={cellCenteringStyle}>Name:</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.employeeName}</td>
-              <td className="border border-gray-700 text-black font-bold text-center" style={cellCenteringStyle}>UAN No.:</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.uanNo}</td>
+            <tr>
+              <td className="border border-gray-700" style={labelCellStyle}>Name:</td>
+              <td className="border border-gray-700" style={cellCenteringStyle}>{data.employeeName}</td>
+              <td className="border border-gray-700" style={labelCellStyle}>UAN No.:</td>
+              <td className="border border-gray-700" style={cellCenteringStyle}>{data.uanNo}</td>
             </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="border border-gray-700 text-black font-bold text-center" style={cellCenteringStyle}>Department:</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.department}</td>
-              <td className="border border-gray-700 text-black font-bold text-center" style={cellCenteringStyle}>ESIC No.:</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.esicNo}</td>
+            <tr>
+              <td className="border border-gray-700" style={labelCellStyle}>Department:</td>
+              <td className="border border-gray-700" style={cellCenteringStyle}>{data.department}</td>
+              <td className="border border-gray-700" style={labelCellStyle}>ESIC No.:</td>
+              <td className="border border-gray-700" style={cellCenteringStyle}>{data.esicNo}</td>
             </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="border border-gray-700 text-black font-bold text-center" style={cellCenteringStyle}>Designation:</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.designation}</td>
-              <td className="border border-gray-700 text-black font-bold text-center" style={cellCenteringStyle}>Bank A/C No.:</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.bankAccountNo}</td>
+            <tr>
+              <td className="border border-gray-700" style={labelCellStyle}>Designation:</td>
+              <td className="border border-gray-700" style={cellCenteringStyle}>{data.designation}</td>
+              <td className="border border-gray-700" style={labelCellStyle}>Bank A/C No.:</td>
+              <td className="border border-gray-700" style={cellCenteringStyle}>{data.bankAccountNo}</td>
             </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="border border-gray-700 text-black font-bold text-center" style={cellCenteringStyle}>Date Of Joining:</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.dateOfJoining}</td>
-              <td className="border border-gray-700 text-black font-bold text-center" style={cellCenteringStyle}>Days In Month:</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.daysInMonth}</td>
+            <tr>
+              <td className="border border-gray-700" style={labelCellStyle}>Date Of Joining:</td>
+              <td className="border border-gray-700" style={cellCenteringStyle}>{data.dateOfJoining}</td>
+              <td className="border border-gray-700" style={labelCellStyle}>Days In Month:</td>
+              <td className="border border-gray-700" style={cellCenteringStyle}>{data.daysInMonth}</td>
             </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="border border-gray-700 text-black font-bold" style={cellCenteringStyle}>Employee Code:</td>
-              <td className="border border-gray-700 text-black" style={cellCenteringStyle}>{data.employeeCode}</td>
-              <td className="border border-gray-700" colSpan={2} style={cellCenteringStyle}></td>
+            <tr>
+              <td className="border border-gray-700" style={labelCellStyle}>Employee Code:</td>
+              <td className="border border-gray-700" style={cellCenteringStyle}>{data.employeeCode}</td>
+              <td className="border border-gray-700" colSpan={2} style={{...cellCenteringStyle, backgroundColor: '#f8fafc'}}></td>
             </tr>
           </tbody>
         </table>
       </div>
 
       {/* Leave Details Table */}
-      <div className="p-2" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '-15px', marginBottom: '25px' }}>
-          <h3 className="font-extrabold text-black" style={{ margin: 0, fontSize: '25px', textAlign: 'center' }}>Leave Details</h3>
-        </div>
-        <table className="w-full border-collapse" style={{fontSize: '18px', fontWeight: '500', fontFamily: '"Segoe UI", Arial, sans-serif', width: '100%', margin: '0 auto'}}>
+      <div style={{ marginBottom: '30px', padding: '0 20px' }}>
+        <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#1e40af', marginBottom: '16px', borderBottom: '3px solid #3b82f6', paddingBottom: '8px' }}>Leave Details</h2>
+        <table className="w-full border-collapse" style={{fontSize: '16px', fontWeight: '600', fontFamily: '"Inter", "Segoe UI", Arial, sans-serif', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
           <thead>
-            <tr className="bg-gray-200">
-              <th className="border border-gray-700 text-center text-black font-bold" style={headerCenteringStyle}>Leave Type</th>
-              <th className="border border-gray-700 text-center text-black font-bold" style={headerCenteringStyle}>Total Leave In The Account</th>
-              <th className="border border-gray-700 text-center text-black font-bold" style={headerCenteringStyle}>Leave Availed</th>
-              <th className="border border-gray-700 text-center text-black font-bold" style={headerCenteringStyle}>Subsisting Leave</th>
-              <th className="border border-gray-700 text-center text-black font-bold" style={headerCenteringStyle}>LWP</th>
+            <tr>
+              <th className="border border-gray-700" style={headerCenteringStyle}>Leave Type</th>
+              <th className="border border-gray-700" style={headerCenteringStyle}>Total Leave</th>
+              <th className="border border-gray-700" style={headerCenteringStyle}>Availed</th>
+              <th className="border border-gray-700" style={headerCenteringStyle}>Subsisting</th>
+              <th className="border border-gray-700" style={headerCenteringStyle}>LWP</th>
             </tr>
           </thead>
           <tbody>
             {data.leaves.map((leave, idx) => (
-              <tr key={idx} className="hover:bg-gray-50">
-                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{leave.type}</td>
-                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{leave.total.toFixed(1)}</td>
-                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{leave.availed.toFixed(1)}</td>
-                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{leave.subsisting.toFixed(1)}</td>
-                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{leave.lwp.toFixed(1)}</td>
+              <tr key={idx}>
+                <td className="border border-gray-700" style={labelCellStyle}>{leave.type}</td>
+                <td className="border border-gray-700" style={cellCenteringStyle}>{leave.total.toFixed(1)}</td>
+                <td className="border border-gray-700" style={{...cellCenteringStyle, color: leave.availed > 0 ? '#dc2626' : '#1f2937', fontWeight: leave.availed > 0 ? '700' : '500'}}>{leave.availed.toFixed(1)}</td>
+                <td className="border border-gray-700" style={cellCenteringStyle}>{leave.subsisting.toFixed(1)}</td>
+                <td className="border border-gray-700" style={cellCenteringStyle}>{leave.lwp.toFixed(1)}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
-            <tr className="font-bold bg-gray-50">
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>Total Leaves Taken</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.totalLeavesTaken.toFixed(1)}</td>
-              <td colSpan={2} className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>Total Leave Without Pay -</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.totalLeaveWithoutPay.toFixed(1)}</td>
+            <tr>
+              <td className="border border-gray-700" style={totalRowStyle}>Total Leaves Taken</td>
+              <td className="border border-gray-700" style={totalRowStyle}>{data.totalLeavesTaken.toFixed(1)}</td>
+              <td colSpan={2} className="border border-gray-700" style={totalRowStyle}>Total Leave Without Pay</td>
+              <td className="border border-gray-700" style={totalRowStyle}>{data.totalLeaveWithoutPay.toFixed(1)}</td>
             </tr>
-            <tr className="font-bold bg-gray-50">
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>Total Present Days</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.totalPresentDays.toFixed(1)}</td>
-              <td colSpan={2} className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>Total Days Payable</td>
-              <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.totalDaysPayable.toFixed(1)}</td>
+            <tr>
+              <td className="border border-gray-700" style={totalRowStyle}>Total Present Days</td>
+              <td className="border border-gray-700" style={totalRowStyle}>{data.totalPresentDays.toFixed(1)}</td>
+              <td colSpan={2} className="border border-gray-700" style={totalRowStyle}>Total Days Payable</td>
+              <td className="border border-gray-700" style={totalRowStyle}>{data.totalDaysPayable.toFixed(1)}</td>
             </tr>
           </tfoot>
         </table>
       </div>
 
-
-      {/* Salary Details Table - 5 Column Layout */}
-      <div className="p-2" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '-15px', marginBottom: '25px' }}>
-          <h3 className="font-extrabold text-black" style={{ margin: 0, fontSize: '25px', textAlign: 'center' }}>Salary Details</h3>
-        </div>
-        <table className="w-full border-collapse" style={{fontSize: '18px', fontWeight: '500', width: '100%', margin: '0 auto'}}>
+      {/* Salary Details Table */}
+      <div style={{ marginBottom: '30px', padding: '0 20px' }}>
+        <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#1e40af', marginBottom: '16px', borderBottom: '3px solid #3b82f6', paddingBottom: '8px' }}>Salary Details</h2>
+        <table className="w-full border-collapse" style={{fontSize: '16px', fontWeight: '600', fontFamily: '"Inter", "Segoe UI", Arial, sans-serif', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
           <thead>
-            <tr className="bg-gray-200">
-              <th className="border border-gray-700 text-center text-black font-bold" style={headerCenteringStyle}>Earning</th>
-              <th className="border border-gray-700 text-center text-black font-bold" style={headerCenteringStyle}>Actual</th>
-              <th className="border border-gray-700 text-center text-black font-bold" style={headerCenteringStyle}>Earned</th>
-              <th className="border border-gray-700 text-center text-black font-bold" style={headerCenteringStyle}>Deduction</th>
-              <th className="border border-gray-700 text-center text-black font-bold" style={headerCenteringStyle}>Amount</th>
+            <tr>
+              <th className="border border-gray-700" style={{...headerCenteringStyle, width: '25%'}}>Earning</th>
+              <th className="border border-gray-700" style={{...headerCenteringStyle, width: '18%'}}>Actual</th>
+              <th className="border border-gray-700" style={{...headerCenteringStyle, width: '18%'}}>Earned</th>
+              <th className="border border-gray-700" style={{...headerCenteringStyle, width: '20%'}}>Deduction</th>
+              <th className="border border-gray-700" style={{...headerCenteringStyle, width: '19%'}}>Amount</th>
             </tr>
           </thead>
           <tbody>
             {data.earnings.map((earning, idx) => (
-              <tr key={`earning-${idx}`} className="hover:bg-gray-50">
-                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{earning.name}</td>
-                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{formatCurrency(earning.actualGross || 0)}</td>
-                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{formatCurrency(earning.earnedGross || 0)}</td>
-                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>
+              <tr key={`earning-${idx}`}>
+                <td className="border border-gray-700" style={labelCellStyle}>{earning.name}</td>
+                <td className="border border-gray-700" style={cellCenteringStyle}>{formatCurrency(earning.actualGross || 0)}</td>
+                <td className="border border-gray-700" style={cellCenteringStyle}>{formatCurrency(earning.earnedGross || 0)}</td>
+                <td className="border border-gray-700" style={labelCellStyle}>
                   {data.deductions[idx]?.name || ''}
                 </td>
-                <td className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>
+                <td className="border border-gray-700" style={cellCenteringStyle}>
                   {data.deductions[idx]?.amount ? formatCurrency(data.deductions[idx].amount) : formatCurrency(0)}
                 </td>
               </tr>
             ))}
-            <tr className="font-bold bg-gray-100">
-              <td className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>Gross Earnings</td>
-              <td className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>{formatCurrency(data.grossEarnings)}</td>
-              <td className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>{formatCurrency(data.earnedGrossEarnings)}</td>
-              <td className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>Deduction</td>
-              <td className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>{formatCurrency(data.totalDeduction)}</td>
-            </tr>
-            <tr className="font-bold bg-gray-100">
-              <td colSpan={3} className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>Net Salary Credited</td>
-              <td colSpan={2} className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>₹ {formatCurrency(data.netSalaryCredited)}</td>
+            <tr>
+              <td className="border border-gray-700" style={totalRowStyle}>Gross Earnings</td>
+              <td className="border border-gray-700" style={totalRowStyle}>{formatCurrency(data.grossEarnings)}</td>
+              <td className="border border-gray-700" style={totalRowStyle}>{formatCurrency(data.earnedGrossEarnings)}</td>
+              <td className="border border-gray-700" style={totalRowStyle}>Total Deduction</td>
+              <td className="border border-gray-700" style={totalRowStyle}>{formatCurrency(data.totalDeduction)}</td>
             </tr>
             <tr>
-              <td colSpan={3} className="border border-gray-700 text-black text-center" style={{...cellCenteringStyle, fontWeight: 'bold'}}>Amount (in words)</td>
-              <td colSpan={2} className="border border-gray-700 text-black text-center" style={cellCenteringStyle}>{data.amountInWords}</td>
+              <td colSpan={3} className="border border-gray-700" style={{...totalRowStyle, backgroundColor: '#1e40af', color: '#ffffff', fontSize: '16px'}}>Net Salary Credited</td>
+              <td colSpan={2} className="border border-gray-700" style={{...totalRowStyle, backgroundColor: '#1e40af', color: '#ffffff', fontSize: '16px'}}>₹ {formatCurrency(data.netSalaryCredited)}</td>
+            </tr>
+            <tr>
+              <td colSpan={3} className="border border-gray-700" style={{...labelCellStyle, fontWeight: '600'}}>Amount (in words)</td>
+              <td colSpan={2} className="border border-gray-700" style={{...cellCenteringStyle, fontStyle: 'italic', color: '#059669'}}>{data.amountInWords}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       {/* Footer */}
-      <div className="p-2 text-center">
-        <img src="https://cdn.builder.io/api/v1/image/assets%2F8012cbea6d4a4d528be55b21ebc4390f%2F5e57f6b47c4249638a8470815ec3ca60?format=webp&width=800&height=1200" alt="Infoseum Logo" className="mx-auto mb-2" style={{height: '80px', width: 'auto'}} />
-        <p style={{fontSize: '13px'}} className="text-gray-600">This is a system generated slip</p>
+      <div style={{ padding: '30px 20px', textAlign: 'center', borderTop: '2px solid #e5e7eb', marginTop: '40px' }}>
+        <img src="https://cdn.builder.io/api/v1/image/assets%2F8012cbea6d4a4d528be55b21ebc4390f%2F5e57f6b47c4249638a8470815ec3ca60?format=webp&width=800&height=1200" alt="Infoseum Logo" className="mx-auto mb-3" style={{height: '70px', width: 'auto'}} />
+        <p style={{fontSize: '12px', color: '#6b7280', fontStyle: 'italic'}}>This is a system generated slip</p>
       </div>
       </div>
     </div>

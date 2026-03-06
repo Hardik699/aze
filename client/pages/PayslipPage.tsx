@@ -242,6 +242,64 @@ export default function PayslipPage() {
     year: 'numeric'
   });
 
+  // Helper function to prepare cloned element for download with proper vertical centering
+  const prepareClonedElement = (element: HTMLElement) => {
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = '-9999px';
+    wrapper.style.top = '-9999px';
+    wrapper.style.backgroundColor = '#ffffff';
+    wrapper.style.padding = '40px 0';
+    wrapper.style.width = element.offsetWidth + 'px';
+    wrapper.style.minHeight = 'auto';
+    wrapper.style.boxSizing = 'border-box';
+
+    const clonedElement = element.cloneNode(true) as HTMLElement;
+    clonedElement.style.backgroundColor = '#ffffff';
+    clonedElement.style.margin = '0';
+    clonedElement.style.padding = '30px';
+    clonedElement.style.width = element.offsetWidth + 'px';
+    clonedElement.style.minHeight = 'auto';
+    clonedElement.style.boxSizing = 'border-box';
+
+    // Force white background on all divs
+    const allDivs = clonedElement.querySelectorAll('div');
+    allDivs.forEach((div) => {
+      const htmlDiv = div as HTMLElement;
+      if (!htmlDiv.style.backgroundColor || htmlDiv.style.backgroundColor === 'transparent') {
+        htmlDiv.style.backgroundColor = '#ffffff';
+      }
+    });
+
+    // Wrap cell content in flex containers for proper vertical centering in html2canvas
+    const allCells = clonedElement.querySelectorAll('td, th');
+    allCells.forEach((cell) => {
+      const htmlCell = cell as HTMLElement;
+      const content = htmlCell.innerHTML;
+      
+      // Get background color from cell or use white
+      const bgColor = htmlCell.style.backgroundColor || '#ffffff';
+      
+      // Wrap content in a flex container for vertical centering
+      htmlCell.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; min-height: 40px; width: 100%; padding: 12px; box-sizing: border-box; background-color: ${bgColor};">${content}</div>`;
+      
+      // Set cell styles
+      htmlCell.style.setProperty('padding', '0', 'important');
+      htmlCell.style.setProperty('text-align', 'center', 'important');
+      htmlCell.style.setProperty('vertical-align', 'middle', 'important');
+      htmlCell.style.setProperty('background-color', bgColor, 'important');
+    });
+
+    // Force white background on all tables
+    const allTables = clonedElement.querySelectorAll('table');
+    allTables.forEach((table) => {
+      (table as HTMLElement).style.backgroundColor = '#ffffff';
+    });
+
+    wrapper.appendChild(clonedElement);
+    return wrapper;
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <AppNav />
@@ -281,37 +339,8 @@ export default function PayslipPage() {
                     return;
                   }
 
-                  // Create a wrapper with white background and margins
-                  const wrapper = document.createElement('div');
-                  wrapper.style.position = 'absolute';
-                  wrapper.style.left = '-9999px';
-                  wrapper.style.top = '-9999px';
-                  wrapper.style.backgroundColor = '#ffffff';
-                  wrapper.style.padding = '40px 0';
-                  wrapper.style.width = element.offsetWidth + 'px';
-                  wrapper.style.minHeight = 'auto';
-                  wrapper.style.boxSizing = 'border-box';
-
-                  // Create a clone with white background
-                  const clonedElement = element.cloneNode(true) as HTMLElement;
-                  clonedElement.style.backgroundColor = '#ffffff';
-                  clonedElement.style.margin = '0';
-                  clonedElement.style.padding = '30px';
-                  clonedElement.style.width = element.offsetWidth + 'px';
-                  clonedElement.style.minHeight = 'auto';
-                  clonedElement.style.boxSizing = 'border-box';
-
-                  // Ensure all table cells maintain proper centering
-                  const allCells = clonedElement.querySelectorAll('td, th');
-                  allCells.forEach((cell) => {
-                    (cell as HTMLElement).style.verticalAlign = 'middle';
-                    (cell as HTMLElement).style.textAlign = 'center';
-                    (cell as HTMLElement).style.padding = '12px';
-                    (cell as HTMLElement).style.lineHeight = '1.3';
-                  });
-
-                  // Add cloned element to wrapper
-                  wrapper.appendChild(clonedElement);
+                  // Prepare cloned element with proper vertical centering
+                  const wrapper = prepareClonedElement(element);
                   document.body.appendChild(wrapper);
 
                   // Wait for content to render
@@ -372,37 +401,8 @@ export default function PayslipPage() {
                     return;
                   }
 
-                  // Create a wrapper with white background and margins
-                  const wrapper = document.createElement('div');
-                  wrapper.style.position = 'absolute';
-                  wrapper.style.left = '-9999px';
-                  wrapper.style.top = '-9999px';
-                  wrapper.style.backgroundColor = '#ffffff';
-                  wrapper.style.padding = '40px 0';
-                  wrapper.style.width = element.offsetWidth + 'px';
-                  wrapper.style.minHeight = 'auto';
-                  wrapper.style.boxSizing = 'border-box';
-
-                  // Create a clone with white background
-                  const clonedElement = element.cloneNode(true) as HTMLElement;
-                  clonedElement.style.backgroundColor = '#ffffff';
-                  clonedElement.style.margin = '0';
-                  clonedElement.style.padding = '30px';
-                  clonedElement.style.width = element.offsetWidth + 'px';
-                  clonedElement.style.minHeight = 'auto';
-                  clonedElement.style.boxSizing = 'border-box';
-
-                  // Ensure all table cells maintain proper centering
-                  const allCells = clonedElement.querySelectorAll('td, th');
-                  allCells.forEach((cell) => {
-                    (cell as HTMLElement).style.verticalAlign = 'middle';
-                    (cell as HTMLElement).style.textAlign = 'center';
-                    (cell as HTMLElement).style.padding = '12px';
-                    (cell as HTMLElement).style.lineHeight = '1.3';
-                  });
-
-                  // Add cloned element to wrapper
-                  wrapper.appendChild(clonedElement);
+                  // Prepare cloned element with proper vertical centering
+                  const wrapper = prepareClonedElement(element);
                   document.body.appendChild(wrapper);
 
                   // Wait for content to render
