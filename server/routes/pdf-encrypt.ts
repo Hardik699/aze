@@ -20,7 +20,7 @@ export const encryptPDF: RequestHandler = async (req, res) => {
     // Convert base64 image to buffer
     const imgBuffer = Buffer.from(image, "base64");
 
-    // Create a new PDF document with password protection
+    // Create a new PDF document with password protection and white background
     const doc = new PDFDocument({
       size: "A4",
       userPassword: password,
@@ -41,6 +41,10 @@ export const encryptPDF: RequestHandler = async (req, res) => {
 
     // Pipe the PDF document to the response
     doc.pipe(res);
+
+    // Add white background to the entire page
+    doc.rect(0, 0, doc.page.width, doc.page.height)
+       .fill('#ffffff');
 
     // Add the image to the PDF
     // We'll scale the image to fit the page
