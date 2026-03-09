@@ -44,6 +44,7 @@ import { toast } from "sonner";
 import { uploadFileToSupabase, uploadBase64ToSupabase } from "@/lib/supabase";
 import AppNav from "@/components/Navigation";
 import SuccessModal from "@/components/SuccessModal";
+import { ImageCropper } from "@/components/ImageCropper";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
@@ -256,7 +257,7 @@ const generatePayslipPDF = async (employee: Employee, record: any) => {
             <td style="border: 1px solid #000; padding: 8px;">Retention Bonus</td>
             <td style="border: 1px solid #000; padding: 8px; text-align: right;">${(record.retentionBonus || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>
             <td style="border: 1px solid #000; padding: 8px; text-align: right;">${(record.retentionBonusEarned || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</td>
-            <td style="border: 1px solid #000; padding: 8px; text-align: right;"><strong>Retention</strong></td>
+            <td style="border: 1px solid #000; padding: 8px; text-align: right;"><strong>${employee.retentionType || "Retention"}</strong></td>
           </tr>
           <tr>
             <td style="border: 1px solid #000; padding: 8px;">Advance Any</td>
@@ -404,11 +405,13 @@ interface Employee {
   resignationLetter?: string;
   deactivationDate?: string;
   pf?: string;
+  employerPf?: string;
   esic?: string;
   pt?: string;
   tds?: string;
   advanceAny?: string;
   retention?: string;
+  retentionType?: "Retention" | "Deduction";
 }
 
 interface SalaryRecord {
@@ -461,6 +464,8 @@ export default function EmployeeDetailsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Employee>>({});
   const [editPhotoPreview, setEditPhotoPreview] = useState<string>("");
+  const [showImageCropper, setShowImageCropper] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"details" | "salary">("details");
   const [showSalaryForm, setShowSalaryForm] = useState(false);
   const [editingSalaryRecordId, setEditingSalaryRecordId] = useState<string | null>(null);
@@ -829,11 +834,24 @@ export default function EmployeeDetailsPage() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-        setEditPhotoPreview(result);
-        handleEditFormChange("photo", result);
+        setImageToCrop(result);
+        setShowImageCropper(true);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCropComplete = (croppedImage: string) => {
+    setEditPhotoPreview(croppedImage);
+    handleEditFormChange("photo", croppedImage);
+    setShowImageCropper(false);
+    setImageToCrop("");
+    toast.success("Photo cropped successfully!");
+  };
+
+  const handleCropCancel = () => {
+    setShowImageCropper(false);
+    setImageToCrop("");
   };
 
   const handleEditDocumentUpload =
@@ -1262,9 +1280,9 @@ export default function EmployeeDetailsPage() {
 
   const initializeNewSalaryForm = () => {
     const salary = parseFloat(employee?.salary || "0");
-    const pf = parseFloat(employee?.pf || "0");
+    const employerPf = parseFloat(employee?.employerPf || "0");
     const esic = parseFloat(employee?.esic || "0");
-    const basicAmount = salary - pf - esic;
+    const basicAmount = salary - employerPf - esic;
 
     // Auto-calculate dependent values
     const calculations = calculateSalaryComponents(basicAmount);
@@ -1327,9 +1345,9 @@ export default function EmployeeDetailsPage() {
   const handleEditSalaryRecord = (record: SalaryRecord) => {
     setEditingSalaryRecordId(record.id);
     const salary = parseFloat(employee?.salary || "0");
-    const pf = parseFloat(employee?.pf || "0");
+    const employerPf = parseFloat(employee?.employerPf || "0");
     const esic = parseFloat(employee?.esic || "0");
-    const basicAmount = salary - pf - esic;
+    const basicAmount = salary - employerPf - esic;
 
     // Auto-calculate dependent values based on basic amount
     const calculations = calculateSalaryComponents(basicAmount);
@@ -1836,11 +1854,11 @@ export default function EmployeeDetailsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
                     { label: "PF", key: "pf" },
+                    { label: "Employer PF", key: "employerPf" },
                     { label: "ESIC", key: "esic" },
                     { label: "PT", key: "pt" },
                     { label: "TDS", key: "tds" },
                     { label: "Advance Any", key: "advanceAny" },
-                    { label: "Retention", key: "retention" },
                   ].map((field) => (
                     <div key={field.key} className="space-y-2">
                       <Label className="text-slate-300">{field.label}</Label>
@@ -1865,6 +1883,44 @@ export default function EmployeeDetailsPage() {
                       )}
                     </div>
                   ))}
+                  
+                  {/* Retention with Type Dropdown */}
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">
+                      {isEditing && editForm.retentionType ? editForm.retentionType : employee.retentionType || "Retention"}
+                    </Label>
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <Select
+                          value={editForm.retentionType || "Retention"}
+                          onValueChange={(value) =>
+                            handleEditFormChange("retentionType", value)
+                          }
+                        >
+                          <SelectTrigger className="bg-slate-800/50 border-slate-700 text-white">
+                            <SelectValue placeholder="Select Type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Retention">Retention</SelectItem>
+                            <SelectItem value="Deduction">Deduction</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          type="number"
+                          value={(editForm.retention as string) || ""}
+                          onChange={(e) =>
+                            handleEditFormChange("retention", e.target.value)
+                          }
+                          placeholder="0"
+                          className="bg-slate-800/50 border-slate-700 text-white"
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-white p-2 bg-slate-800/30 rounded border border-slate-700">
+                        {employee.retention || "N/A"}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -2039,9 +2095,9 @@ export default function EmployeeDetailsPage() {
                           setShowSalaryForm(false);
                           setEditingSalaryRecordId(null);
                           const salary = parseFloat(employee?.salary || "0");
-                          const pf = parseFloat(employee?.pf || "0");
+                          const employerPf = parseFloat(employee?.employerPf || "0");
                           const esic = parseFloat(employee?.esic || "0");
-                          const basicAmount = salary - pf - esic;
+                          const basicAmount = salary - employerPf - esic;
 
                           // Auto-calculate dependent values
                           const calculations = calculateSalaryComponents(basicAmount);
@@ -2424,9 +2480,9 @@ export default function EmployeeDetailsPage() {
                     <div className="space-y-3">
                       <h4 className="text-slate-200 font-semibold text-sm">Earnings</h4>
 
-                      {/* Basic Salary Input - Auto-calculated as Salary - PF - ESIC */}
+                      {/* Basic Salary Input - Auto-calculated as Salary - Employer PF - ESIC */}
                       <div className="bg-slate-800/30 border border-slate-700 rounded p-4">
-                        <Label className="text-slate-300 text-sm font-medium block mb-2">Basic Salary = Salary - PF - ESIC (Auto-calculates HRA, Conveyance & Special Allowance)</Label>
+                        <Label className="text-slate-300 text-sm font-medium block mb-2">Basic Salary = Salary - Employer PF - ESIC (Auto-calculates HRA, Conveyance & Special Allowance)</Label>
                         <div className="px-3 py-3 bg-slate-900/50 border border-slate-700 rounded text-white font-medium text-lg">
                           {salaryForm.basic}
                         </div>
@@ -3049,6 +3105,14 @@ export default function EmployeeDetailsPage() {
           </div>
         )}
       </main>
+
+      {/* Image Cropper Modal */}
+      <ImageCropper
+        image={imageToCrop}
+        open={showImageCropper}
+        onCropComplete={handleCropComplete}
+        onCancel={handleCropCancel}
+      />
     </div>
   );
 }

@@ -48,11 +48,13 @@ export interface IEmployee extends Document {
 
   // PF Details
   pf?: string;
+  employerPf?: string;
   esic?: string;
   pt?: string;
   tds?: string;
   advanceAny?: string;
   retention?: string;
+  retentionType?: "Retention" | "Deduction";
 
   createdAt: Date;
   updatedAt: Date;
@@ -103,11 +105,13 @@ const employeeSchema = new Schema<IEmployee>(
     deactivationDate: String,
 
     pf: String,
+    employerPf: String,
     esic: String,
     pt: String,
     tds: String,
     advanceAny: String,
     retention: String,
+    retentionType: { type: String, enum: ["Retention", "Deduction"], default: "Retention" },
   },
   { timestamps: true },
 );

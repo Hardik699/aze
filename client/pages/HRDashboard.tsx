@@ -78,6 +78,7 @@ import { uploadFileToSupabase, uploadBase64ToSupabase } from "@/lib/supabase";
 import { notifyNewEmployee } from "@/lib/notifications";
 import AppNav from "@/components/Navigation";
 import SuccessModal from "@/components/SuccessModal";
+import { ImageCropper } from "@/components/ImageCropper";
 import {
   exportToCSV,
   exportToExcel,
@@ -235,6 +236,11 @@ export default function HRDashboard() {
   const [documentPreviews, setDocumentPreviews] = useState<{
     [key: string]: string;
   }>({});
+
+  // Image cropper states
+  const [showImageCropper, setShowImageCropper] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string>("");
+  const [cropperMode, setCropperMode] = useState<"new" | "edit">("new");
 
   // UAN Number state
   const [uanSkipReason, setUanSkipReason] = useState<string>("");
@@ -716,21 +722,14 @@ export default function HRDashboard() {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      try {
-        toast.loading("Uploading photo...");
-        const fileUrl = await uploadFileToSupabase(
-          file,
-          "documents/employee-photos",
-        );
-        toast.dismiss();
-        toast.success("Photo uploaded successfully");
-        setPhotoPreview(fileUrl);
-        setNewEmployee({ ...newEmployee, photo: fileUrl });
-      } catch (error) {
-        toast.dismiss();
-        console.error("Error uploading photo:", error);
-        toast.error("Failed to upload photo");
-      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setImageToCrop(result);
+        setCropperMode("new");
+        setShowImageCropper(true);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -786,22 +785,33 @@ export default function HRDashboard() {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
-      try {
-        toast.loading("Uploading photo...");
-        const fileUrl = await uploadFileToSupabase(
-          file,
-          "documents/employee-photos",
-        );
-        toast.dismiss();
-        toast.success("Photo uploaded successfully");
-        setEditPhotoPreview(fileUrl);
-        handleEditFormChange("photo", fileUrl);
-      } catch (error) {
-        toast.dismiss();
-        console.error("Error uploading photo:", error);
-        toast.error("Failed to upload photo");
-      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setImageToCrop(result);
+        setCropperMode("edit");
+        setShowImageCropper(true);
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const handleCropComplete = (croppedImage: string) => {
+    if (cropperMode === "new") {
+      setPhotoPreview(croppedImage);
+      setNewEmployee({ ...newEmployee, photo: croppedImage });
+    } else {
+      setEditPhotoPreview(croppedImage);
+      handleEditFormChange("photo", croppedImage);
+    }
+    setShowImageCropper(false);
+    setImageToCrop("");
+    toast.success("Photo cropped successfully!");
+  };
+
+  const handleCropCancel = () => {
+    setShowImageCropper(false);
+    setImageToCrop("");
   };
 
   // Generate next employee ID
@@ -4858,6 +4868,14 @@ Generated on: ${new Date().toLocaleString()}
         message={successModal.message}
         onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
         autoClose={3000}
+      />
+
+      {/* Image Cropper Modal */}
+      <ImageCropper
+        image={imageToCrop}
+        open={showImageCropper}
+        onCropComplete={handleCropComplete}
+        onCancel={handleCropCancel}
       />
     </div>
   );

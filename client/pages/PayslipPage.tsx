@@ -72,6 +72,7 @@ interface Employee {
   _id?: string;
   esic?: string;
   accountNumber?: string;
+  retentionType?: "Retention" | "Deduction";
 }
 
 // Company Information (Fixed for all payslips)
@@ -188,7 +189,7 @@ export default function PayslipPage() {
           { name: "ESIC", amount: esic },
           { name: "PT", amount: pt },
           { name: "TDS", amount: tds },
-          { name: "Retention", amount: retention },
+          { name: employee.retentionType || "Retention", amount: retention },
           ...(advanceAnyDeduction > 0 ? [{ name: "Advance Deduction", amount: advanceAnyDeduction }] : []),
         ],
         grossEarnings: totalEarningsActual,
