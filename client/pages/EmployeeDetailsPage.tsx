@@ -2819,97 +2819,13 @@ export default function EmployeeDetailsPage() {
                           </CardContent>
                         </Card>
 
-                        {/* Salary Details Table */}
-                        {record.basicSalary > 0 || record.totalSalary > 0 ? (
-                          <div className="bg-slate-900/50 border border-slate-700 rounded-lg overflow-hidden">
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr className="bg-slate-800/50 border-b border-slate-700">
-                                    <th className="px-4 py-3 text-left text-slate-300 font-semibold">Salary Details</th>
-                                    <th className="px-4 py-3 text-right text-slate-300 font-semibold">Amount</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr className="border-b border-slate-700/50 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 text-slate-300">Basic Salary</td>
-                                    <td className="px-4 py-2 text-right text-white font-medium">₹{record.basicSalary.toLocaleString()}</td>
-                                  </tr>
-                                  {(record.bonus && record.bonus > 0) ? (
-                                    <tr className="border-b border-slate-700/50 hover:bg-slate-800/20">
-                                      <td className="px-4 py-2 text-slate-300">Bonus</td>
-                                      <td className="px-4 py-2 text-right text-green-400 font-medium">+₹{record.bonus.toLocaleString()}</td>
-                                    </tr>
-                                  ) : null}
-                                  <tr className="border-b border-slate-700/50 bg-slate-800/30">
-                                    <td className="px-4 py-2 text-white font-semibold">Gross Earnings</td>
-                                    <td className="px-4 py-2 text-right text-white font-bold">
-                                      ₹{(record.basicSalary + (record.bonus || 0)).toLocaleString()}
-                                    </td>
-                                  </tr>
-                                  {(record.deductions && record.deductions > 0) ? (
-                                    <tr className="border-b border-slate-700/50 hover:bg-slate-800/20">
-                                      <td className="px-4 py-2 text-slate-300">Deductions</td>
-                                      <td className="px-4 py-2 text-right text-red-400 font-medium">-₹{record.deductions.toLocaleString()}</td>
-                                    </tr>
-                                  ) : null}
-                                  <tr className="bg-green-500/10 border-t-2 border-green-500/30">
-                                    <td className="px-4 py-2 text-green-400 font-semibold">Net Salary Credited</td>
-                                    <td className="px-4 py-2 text-right text-green-400 font-bold">
-                                      <div className="space-y-1">
-                                        <div className="text-lg">₹{record.totalSalary.toLocaleString()}</div>
-                                        <div className="text-xs text-green-300">{numberToWords(Math.floor(record.totalSalary))}</div>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        ) : null}
-
-                        {/* Leave Details Table */}
-                        <div className="bg-slate-900/50 border border-slate-700 rounded-lg overflow-hidden">
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="bg-slate-800/50 border-b border-slate-700">
-                                  <th className="px-4 py-3 text-left text-slate-300 font-semibold">Leave Type</th>
-                                  <th className="px-4 py-3 text-right text-slate-300 font-semibold">Total</th>
-                                  <th className="px-4 py-3 text-right text-slate-300 font-semibold">Availed</th>
-                                  <th className="px-4 py-3 text-right text-slate-300 font-semibold">Subsisting</th>
-                                  <th className="px-4 py-3 text-right text-slate-300 font-semibold">LWP</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr className="border-b border-slate-700/50 hover:bg-slate-800/20">
-                                  <td className="px-4 py-2 text-slate-300">PL (Paid Leave)</td>
-                                  <td className="px-4 py-2 text-right text-white">{record.plTotal || 0}</td>
-                                  <td className="px-4 py-2 text-right text-white">{record.plAvailed || 0}</td>
-                                  <td className="px-4 py-2 text-right text-white">{(record.plTotal || 0) - (record.plAvailed || 0)}</td>
-                                  <td className="px-4 py-2 text-right text-white">-</td>
-                                </tr>
-                                <tr className="border-b border-slate-700/50 hover:bg-slate-800/20">
-                                  <td className="px-4 py-2 text-slate-300">CL (Casual Leave)</td>
-                                  <td className="px-4 py-2 text-right text-white">{record.clTotal || 0}</td>
-                                  <td className="px-4 py-2 text-right text-white">{record.clAvailed || 0}</td>
-                                  <td className="px-4 py-2 text-right text-white">{(record.clTotal || 0) - (record.clAvailed || 0)}</td>
-                                  <td className="px-4 py-2 text-right text-white">-</td>
-                                </tr>
-                                <tr className="border-b border-slate-700/50 hover:bg-slate-800/20">
-                                  <td className="px-4 py-2 text-slate-300">SL (Sick Leave)</td>
-                                  <td className="px-4 py-2 text-right text-white">{record.slTotal || 0}</td>
-                                  <td className="px-4 py-2 text-right text-white">{record.slAvailed || 0}</td>
-                                  <td className="px-4 py-2 text-right text-white">{(record.slTotal || 0) - (record.slAvailed || 0)}</td>
-                                  <td className="px-4 py-2 text-right text-white">-</td>
-                                </tr>
-                                <tr className="bg-slate-800/30 border-t border-slate-700">
-                                  <td className="px-4 py-2 text-slate-300">Leave Without Pay (LWP)</td>
-                                  <td colSpan={4} className="px-4 py-2 text-right text-white font-medium">{record.lwp || 0}</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
+                        {/* Salary Slip Detail */}
+                        <div className="bg-white rounded-lg overflow-hidden shadow-xl">
+                          <SalarySlip
+                            employee={employee}
+                            record={record}
+                            className="w-full"
+                          />
                         </div>
                       </div>
                     ))}

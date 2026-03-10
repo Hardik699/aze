@@ -42,7 +42,41 @@ export const SalarySlip: React.FC<SalarySlipProps> = ({ employee, record, classN
   const netSalary = record.netSalary || record.totalSalary || 0;
 
   return (
-    <div className={cn("bg-white text-black p-4 font-sans text-xs", className)}>
+    <div className={cn("bg-white text-black p-6 font-sans text-xs", className)}>
+      {/* Employee Information Section */}
+      <div className="mb-6">
+        <h2 className="text-lg font-bold text-[#1e40af] mb-4 border-b-2 border-[#4a86e8] pb-1 uppercase">Employee Information</h2>
+        <table className="w-full border-collapse border border-slate-300">
+          <tbody>
+            <tr>
+              <td className="border border-slate-300 px-3 py-2 font-bold bg-slate-50 w-1/4">Name:</td>
+              <td className="border border-slate-300 px-3 py-2 w-1/4">{employee?.fullName}</td>
+              <td className="border border-slate-300 px-3 py-2 font-bold bg-slate-50 w-1/4">UAN No:</td>
+              <td className="border border-slate-300 px-3 py-2 w-1/4">{employee?.uanNumber || "N/A"}</td>
+            </tr>
+            <tr>
+              <td className="border border-slate-300 px-3 py-2 font-bold bg-slate-50">Department:</td>
+              <td className="border border-slate-300 px-3 py-2">{employee?.department}</td>
+              <td className="border border-slate-300 px-3 py-2 font-bold bg-slate-50">ESIC No:</td>
+              <td className="border border-slate-300 px-3 py-2">{employee?.esic || "N/A"}</td>
+            </tr>
+            <tr>
+              <td className="border border-slate-300 px-3 py-2 font-bold bg-slate-50">Designation:</td>
+              <td className="border border-slate-300 px-3 py-2">{employee?.position}</td>
+              <td className="border border-slate-300 px-3 py-2 font-bold bg-slate-50">Days in Month:</td>
+              <td className="border border-slate-300 px-3 py-2">{record.totalWorkingDays || 30}</td>
+            </tr>
+            <tr>
+              <td className="border border-slate-300 px-3 py-2 font-bold bg-slate-50">Joining Date:</td>
+              <td className="border border-slate-300 px-3 py-2">{employee?.joiningDate}</td>
+              <td className="border border-slate-300 px-3 py-2 font-bold bg-slate-50">Employee Code:</td>
+              <td className="border border-slate-300 px-3 py-2">{employee?.employeeId}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Salary Details Table */}
       <table className="w-full border-collapse border border-slate-300">
         <thead className="bg-[#4a86e8] text-white">
           <tr>

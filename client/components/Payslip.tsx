@@ -165,47 +165,6 @@ export function Payslip({ data }: { data: PayslipData }) {
         </table>
       </div>
 
-      {/* Leave Details Table */}
-      <div style={{ marginBottom: '30px', padding: '0 20px' }}>
-        <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#1e40af', marginBottom: '16px', borderBottom: '3px solid #3b82f6', paddingBottom: '8px' }}>Leave Details</h2>
-        <table className="w-full border-collapse" style={{fontSize: '16px', fontWeight: '600', fontFamily: '"Inter", "Segoe UI", Arial, sans-serif', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
-          <thead>
-            <tr>
-              <th className="border border-gray-700" style={headerCenteringStyle}>Leave Type</th>
-              <th className="border border-gray-700" style={headerCenteringStyle}>Total Leave</th>
-              <th className="border border-gray-700" style={headerCenteringStyle}>Availed</th>
-              <th className="border border-gray-700" style={headerCenteringStyle}>Subsisting</th>
-              <th className="border border-gray-700" style={headerCenteringStyle}>LWP</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.leaves.map((leave, idx) => (
-              <tr key={idx}>
-                <td className="border border-gray-700" style={labelCellStyle}>{leave.type}</td>
-                <td className="border border-gray-700" style={cellCenteringStyle}>{leave.total.toFixed(1)}</td>
-                <td className="border border-gray-700" style={{...cellCenteringStyle, color: leave.availed > 0 ? '#dc2626' : '#1f2937', fontWeight: leave.availed > 0 ? '700' : '500'}}>{leave.availed.toFixed(1)}</td>
-                <td className="border border-gray-700" style={cellCenteringStyle}>{leave.subsisting.toFixed(1)}</td>
-                <td className="border border-gray-700" style={cellCenteringStyle}>{leave.lwp.toFixed(1)}</td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td className="border border-gray-700" style={totalRowStyle}>Total Leaves Taken</td>
-              <td className="border border-gray-700" style={totalRowStyle}>{data.totalLeavesTaken.toFixed(1)}</td>
-              <td colSpan={2} className="border border-gray-700" style={totalRowStyle}>Total Leave Without Pay</td>
-              <td className="border border-gray-700" style={totalRowStyle}>{data.totalLeaveWithoutPay.toFixed(1)}</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-700" style={totalRowStyle}>Total Present Days</td>
-              <td className="border border-gray-700" style={totalRowStyle}>{data.totalPresentDays.toFixed(1)}</td>
-              <td colSpan={2} className="border border-gray-700" style={totalRowStyle}>Total Days Payable</td>
-              <td className="border border-gray-700" style={totalRowStyle}>{data.totalDaysPayable.toFixed(1)}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
       {/* Salary Details Table */}
       <div style={{ marginBottom: '30px', padding: '0 20px' }}>
         <table className="w-full border-collapse border border-gray-400">
