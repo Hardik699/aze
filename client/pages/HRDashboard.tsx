@@ -339,6 +339,8 @@ export default function HRDashboard() {
   const [leaveUploadData, setLeaveUploadData] = useState<any[]>([]);
   const [isUploadingSalary, setIsUploadingSalary] = useState(false);
   const [isUploadingLeave, setIsUploadingLeave] = useState(false);
+  const [isSubmittingBulk, setIsSubmittingBulk] = useState(false);
+  const [bulkMonth, setBulkMonth] = useState(new Date().toISOString().substring(0, 7));
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
     null,
   );
@@ -399,6 +401,56 @@ export default function HRDashboard() {
       setIsUploadingLeave(false);
     };
     reader.readAsArrayBuffer(file);
+  };
+
+  const handleBulkSubmit = async () => {
+    if (salaryUploadData.length === 0) {
+      toast.error("No salary data to submit. Please upload an Excel file first.");
+      return;
+    }
+
+    if (!bulkMonth) {
+      toast.error("Please select a month and year for the salary records.");
+      return;
+    }
+
+    setIsSubmittingBulk(true);
+    toast.loading("Processing bulk salary upload...");
+
+    try {
+      const [yearStr, monthStr] = bulkMonth.split("-");
+      const response = await fetch("/api/salary-records/bulk-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          records: salaryUploadData,
+          month: bulkMonth,
+          year: parseInt(yearStr),
+        }),
+      });
+
+      const result = await response.json();
+      toast.dismiss();
+
+      if (result.success) {
+        toast.success(`Successfully processed ${result.results.success} records!`);
+        if (result.results.failed > 0) {
+          toast.warning(`${result.results.failed} records failed. Check console for details.`);
+          console.warn("Bulk upload errors:", result.results.errors);
+        }
+        // Clear data after successful upload
+        setSalaryUploadData([]);
+        setLeaveUploadData([]);
+      } else {
+        toast.error(`Upload failed: ${result.error || "Unknown error"}`);
+      }
+    } catch (error) {
+      toast.dismiss();
+      console.error("Bulk upload error:", error);
+      toast.error("An error occurred during bulk upload");
+    } finally {
+      setIsSubmittingBulk(false);
+    }
   };
 
   const saveAttendanceRecords = async (updated: AttendanceRecord[]) => {
@@ -3427,7 +3479,27 @@ Generated on: ${new Date().toLocaleString()}
                     Showing first few records from the uploaded files
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-6">
+                  <div className="flex flex-col sm:flex-row items-end gap-4 bg-slate-800/30 p-4 rounded-lg border border-slate-700">
+                    <div className="w-full sm:w-auto space-y-2">
+                      <Label htmlFor="bulk-month" className="text-slate-300">Target Month & Year</Label>
+                      <Input
+                        id="bulk-month"
+                        type="month"
+                        value={bulkMonth}
+                        onChange={(e) => setBulkMonth(e.target.value)}
+                        className="bg-slate-900/50 border-slate-700 text-white"
+                      />
+                    </div>
+                    <Button
+                      onClick={handleBulkSubmit}
+                      disabled={isSubmittingBulk || salaryUploadData.length === 0}
+                      className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      {isSubmittingBulk ? "Processing..." : "Submit and Save Data"}
+                    </Button>
+                  </div>
+
                   <Tabs defaultValue="salary-preview">
                     <TabsList className="bg-slate-800/50 border border-slate-700 mb-4">
                       <TabsTrigger value="salary-preview">Salary Details ({salaryUploadData.length})</TabsTrigger>

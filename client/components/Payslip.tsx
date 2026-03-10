@@ -65,9 +65,9 @@ export function Payslip({ data }: { data: PayslipData }) {
   const cellCenteringStyle: React.CSSProperties = {
     verticalAlign: 'middle',
     textAlign: 'center',
-    padding: '14px 12px',
-    lineHeight: '1.4',
-    fontSize: '16px',
+    padding: '12px 8px',
+    lineHeight: '1.2',
+    fontSize: '14px',
     fontWeight: '600',
     backgroundColor: '#ffffff',
     color: '#000000',
@@ -76,25 +76,34 @@ export function Payslip({ data }: { data: PayslipData }) {
   const headerCenteringStyle: React.CSSProperties = {
     ...cellCenteringStyle,
     fontWeight: '800',
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#4a86e8',
     color: '#ffffff',
-    fontSize: '16px',
+    fontSize: '14px',
     textTransform: 'uppercase',
-    letterSpacing: '0.5px',
   };
 
   const labelCellStyle: React.CSSProperties = {
     ...cellCenteringStyle,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#ffffff',
     fontWeight: '700',
     color: '#000000',
+    textAlign: 'left',
+    paddingLeft: '15px'
   };
 
   const totalRowStyle: React.CSSProperties = {
     ...cellCenteringStyle,
-    backgroundColor: '#dbeafe',
+    backgroundColor: '#d9e9ff',
     fontWeight: '800',
     color: '#000000',
+  };
+
+  const netSalaryRowStyle: React.CSSProperties = {
+    ...cellCenteringStyle,
+    backgroundColor: '#1c4587',
+    color: '#ffffff',
+    fontWeight: '800',
+    fontSize: '16px'
   };
 
   return (
@@ -199,45 +208,44 @@ export function Payslip({ data }: { data: PayslipData }) {
 
       {/* Salary Details Table */}
       <div style={{ marginBottom: '30px', padding: '0 20px' }}>
-        <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#1e40af', marginBottom: '16px', borderBottom: '3px solid #3b82f6', paddingBottom: '8px' }}>Salary Details</h2>
-        <table className="w-full border-collapse" style={{fontSize: '16px', fontWeight: '600', fontFamily: '"Inter", "Segoe UI", Arial, sans-serif', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
+        <table className="w-full border-collapse border border-gray-400">
           <thead>
             <tr>
-              <th className="border border-gray-700" style={{...headerCenteringStyle, width: '25%'}}>Earning</th>
-              <th className="border border-gray-700" style={{...headerCenteringStyle, width: '18%'}}>Actual</th>
-              <th className="border border-gray-700" style={{...headerCenteringStyle, width: '18%'}}>Earned</th>
-              <th className="border border-gray-700" style={{...headerCenteringStyle, width: '20%'}}>Deduction</th>
-              <th className="border border-gray-700" style={{...headerCenteringStyle, width: '19%'}}>Amount</th>
+              <th className="border border-gray-400" style={{...headerCenteringStyle, width: '25%'}}>Earning</th>
+              <th className="border border-gray-400" style={{...headerCenteringStyle, width: '18%'}}>Actual</th>
+              <th className="border border-gray-400" style={{...headerCenteringStyle, width: '18%'}}>Earned</th>
+              <th className="border border-gray-400" style={{...headerCenteringStyle, width: '20%'}}>Deduction</th>
+              <th className="border border-gray-400" style={{...headerCenteringStyle, width: '19%'}}>Amount</th>
             </tr>
           </thead>
           <tbody>
             {data.earnings.map((earning, idx) => (
               <tr key={`earning-${idx}`}>
-                <td className="border border-gray-700" style={labelCellStyle}>{earning.name}</td>
-                <td className="border border-gray-700" style={cellCenteringStyle}>{formatCurrency(earning.actualGross || 0)}</td>
-                <td className="border border-gray-700" style={cellCenteringStyle}>{formatCurrency(earning.earnedGross || 0)}</td>
-                <td className="border border-gray-700" style={labelCellStyle}>
+                <td className="border border-gray-400" style={labelCellStyle}>{earning.name}</td>
+                <td className="border border-gray-400" style={cellCenteringStyle}>{formatCurrency(earning.actualGross || 0)}</td>
+                <td className="border border-gray-400" style={cellCenteringStyle}>{formatCurrency(earning.earnedGross || 0)}</td>
+                <td className="border border-gray-400" style={labelCellStyle}>
                   {data.deductions[idx]?.name || ''}
                 </td>
-                <td className="border border-gray-700" style={cellCenteringStyle}>
-                  {data.deductions[idx]?.amount ? formatCurrency(data.deductions[idx].amount) : formatCurrency(0)}
+                <td className="border border-gray-400" style={cellCenteringStyle}>
+                  {data.deductions[idx]?.amount !== undefined ? formatCurrency(data.deductions[idx].amount) : (data.deductions[idx] ? formatCurrency(0) : '')}
                 </td>
               </tr>
             ))}
             <tr>
-              <td className="border border-gray-700" style={totalRowStyle}>Gross Earnings</td>
-              <td className="border border-gray-700" style={totalRowStyle}>{formatCurrency(data.grossEarnings)}</td>
-              <td className="border border-gray-700" style={totalRowStyle}>{formatCurrency(data.earnedGrossEarnings)}</td>
-              <td className="border border-gray-700" style={totalRowStyle}>Total Deduction</td>
-              <td className="border border-gray-700" style={totalRowStyle}>{formatCurrency(data.totalDeduction)}</td>
+              <td className="border border-gray-400" style={{...totalRowStyle, textAlign: 'left', paddingLeft: '15px'}}>Gross Earnings</td>
+              <td className="border border-gray-400" style={totalRowStyle}>{formatCurrency(data.grossEarnings)}</td>
+              <td className="border border-gray-400" style={totalRowStyle}>{formatCurrency(data.earnedGrossEarnings)}</td>
+              <td className="border border-gray-400" style={{...totalRowStyle, textAlign: 'left', paddingLeft: '15px'}}>Total Deduction</td>
+              <td className="border border-gray-400" style={totalRowStyle}>{formatCurrency(data.totalDeduction)}</td>
             </tr>
             <tr>
-              <td colSpan={3} className="border border-gray-700" style={{...totalRowStyle, backgroundColor: '#1e40af', color: '#ffffff', fontSize: '16px'}}>Net Salary Credited</td>
-              <td colSpan={2} className="border border-gray-700" style={{...totalRowStyle, backgroundColor: '#1e40af', color: '#ffffff', fontSize: '16px'}}>₹ {formatCurrency(data.netSalaryCredited)}</td>
+              <td colSpan={3} className="border border-gray-400" style={netSalaryRowStyle}>Net Salary Credited</td>
+              <td colSpan={2} className="border border-gray-400" style={netSalaryRowStyle}>₹ {formatCurrency(data.netSalaryCredited)}</td>
             </tr>
             <tr>
-              <td colSpan={3} className="border border-gray-700" style={{...labelCellStyle, fontWeight: '600'}}>Amount (in words)</td>
-              <td colSpan={2} className="border border-gray-700" style={{...cellCenteringStyle, fontStyle: 'italic', color: '#059669'}}>{data.amountInWords}</td>
+              <td colSpan={3} className="border border-gray-400" style={{...labelCellStyle, textAlign: 'center', padding: '15px'}}>Amount (in words)</td>
+              <td colSpan={2} className="border border-gray-400" style={{...cellCenteringStyle, fontStyle: 'italic', color: '#38761d', fontWeight: 'bold'}}>{data.amountInWords}</td>
             </tr>
           </tbody>
         </table>

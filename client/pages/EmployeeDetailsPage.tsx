@@ -42,6 +42,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadFileToSupabase, uploadBase64ToSupabase } from "@/lib/supabase";
+import {
+  SalarySlip
+} from "@/components/SalarySlip";
+import { convertNumberToWords } from "@/lib/utils";
 import AppNav from "@/components/Navigation";
 import SuccessModal from "@/components/SuccessModal";
 import { ImageCropper } from "@/components/ImageCropper";
@@ -467,6 +471,8 @@ export default function EmployeeDetailsPage() {
   const [showImageCropper, setShowImageCropper] = useState(false);
   const [imageToCrop, setImageToCrop] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"details" | "salary">("details");
+  const [selectedSalarySlip, setSelectedSalarySlip] = useState<SalaryRecord | null>(null);
+  const [showSlipModal, setShowSlipModal] = useState(false);
   const [showSalaryForm, setShowSalaryForm] = useState(false);
   const [editingSalaryRecordId, setEditingSalaryRecordId] = useState<string | null>(null);
   const [salaryForm, setSalaryForm] = useState({
@@ -565,79 +571,6 @@ export default function EmployeeDetailsPage() {
       actualBasic: Math.round(actualBasic * 100) / 100,
       specialAllowance: Math.round(specialAllowance * 100) / 100,
     };
-  };
-
-  // Helper function to convert numbers to words
-  const convertNumberToWords = (num: number): string => {
-    const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
-    const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
-    const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-    const scales = ["", "Thousand", "Lakh", "Crore"];
-
-    if (num === 0) return "Zero";
-
-    const integerPart = Math.floor(num);
-    const decimalPart = Math.round((num % 1) * 100);
-
-    let result = "";
-    let scaleIndex = 0;
-
-    const convertHundreds = (n: number): string => {
-      let words = "";
-      const hundred = Math.floor(n / 100);
-      const remainder = n % 100;
-
-      if (hundred > 0) {
-        words += ones[hundred] + " Hundred";
-      }
-
-      if (remainder >= 10 && remainder < 20) {
-        if (words) words += " ";
-        words += teens[remainder - 10];
-      } else {
-        const ten = Math.floor(remainder / 10);
-        const one = remainder % 10;
-
-        if (ten > 0) {
-          if (words) words += " ";
-          words += tens[ten];
-        }
-
-        if (one > 0) {
-          if (words) words += " ";
-          words += ones[one];
-        }
-      }
-
-      return words;
-    };
-
-    let temp = integerPart;
-    while (temp > 0) {
-      let chunk = temp % 100;
-      if (scaleIndex === 0) {
-        chunk = temp % 1000;
-      }
-
-      if (chunk !== 0) {
-        const chunkWords = convertHundreds(chunk);
-        if (result) result = chunkWords + " " + scales[scaleIndex] + " " + result;
-        else result = chunkWords + (scales[scaleIndex] ? " " + scales[scaleIndex] : "");
-      }
-
-      if (scaleIndex === 0) {
-        temp = Math.floor(temp / 1000);
-      } else {
-        temp = Math.floor(temp / 100);
-      }
-      scaleIndex++;
-    }
-
-    if (decimalPart > 0) {
-      result += " and " + decimalPart + " Paise";
-    }
-
-    return result.trim();
   };
 
   // Helper function to calculate earned values based on actual values and working days
