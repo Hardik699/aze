@@ -356,7 +356,7 @@ export default function ITPage() {
               setEmployees(mappedEmployees);
             }
           } catch (e) {
-            console.error("Failed to parse employees response:", e);
+            console.error("Failed to parse employees response. This often happens if the connection is lost during body read or if the response is not valid JSON.", e);
           }
         }
         if (deptRes.ok) {

@@ -77,6 +77,7 @@ import { toast } from "sonner";
 import { uploadFileToSupabase, uploadBase64ToSupabase } from "@/lib/supabase";
 import { notifyNewEmployee } from "@/lib/notifications";
 import AppNav from "@/components/Navigation";
+import * as XLSX from "xlsx";
 import SuccessModal from "@/components/SuccessModal";
 import { ImageCropper } from "@/components/ImageCropper";
 import {
@@ -334,9 +335,71 @@ export default function HRDashboard() {
 
   // Tab and employee selection state
   const [activeTab, setActiveTab] = useState<string>("employees");
+  const [salaryUploadData, setSalaryUploadData] = useState<any[]>([]);
+  const [leaveUploadData, setLeaveUploadData] = useState<any[]>([]);
+  const [isUploadingSalary, setIsUploadingSalary] = useState(false);
+  const [isUploadingLeave, setIsUploadingLeave] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(
     null,
   );
+
+  const handleSalaryExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingSalary(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet);
+        setSalaryUploadData(json);
+        toast.success("Salary details Excel parsed successfully!");
+      } catch (error) {
+        console.error("Error parsing salary Excel:", error);
+        toast.error("Failed to parse salary Excel file");
+      } finally {
+        setIsUploadingSalary(false);
+      }
+    };
+    reader.onerror = () => {
+      toast.error("Failed to read salary Excel file");
+      setIsUploadingSalary(false);
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleLeaveExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingLeave(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet);
+        setLeaveUploadData(json);
+        toast.success("Leave details Excel parsed successfully!");
+      } catch (error) {
+        console.error("Error parsing leave Excel:", error);
+        toast.error("Failed to parse leave Excel file");
+      } finally {
+        setIsUploadingLeave(false);
+      }
+    };
+    reader.onerror = () => {
+      toast.error("Failed to read leave Excel file");
+      setIsUploadingLeave(false);
+    };
+    reader.readAsArrayBuffer(file);
+  };
 
   const saveAttendanceRecords = async (updated: AttendanceRecord[]) => {
     setAttendanceRecords(updated);
@@ -463,7 +526,7 @@ export default function HRDashboard() {
                 setEmployees(normalizedEmployees);
               }
             } catch (e) {
-              console.error("Failed to parse employees response:", e);
+              console.error("Failed to parse employees response. This often happens if the connection is lost during body read or if the response is not valid JSON.", e);
             }
           }
           if (deptRes.ok) {
@@ -478,7 +541,7 @@ export default function HRDashboard() {
                 setDepartments(normalizedDepts);
               }
             } catch (e) {
-              console.error("Failed to parse departments response:", e);
+              console.error("Failed to parse departments response. This often happens if the connection is lost during body read or if the response is not valid JSON.", e);
             }
           }
           if (leaveRes.ok) {
@@ -1578,7 +1641,7 @@ Generated on: ${new Date().toLocaleString()}
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-slate-800/50 border border-slate-700">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 bg-slate-800/50 border border-slate-700">
             <TabsTrigger
               value="employees"
               className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
@@ -1613,6 +1676,13 @@ Generated on: ${new Date().toLocaleString()}
             >
               <Calendar className="h-4 w-4 mr-2" />
               Leave Requests
+            </TabsTrigger>
+            <TabsTrigger
+              value="salary-upload"
+              className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Salary Upload
             </TabsTrigger>
           </TabsList>
 
@@ -3211,6 +3281,222 @@ Generated on: ${new Date().toLocaleString()}
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Salary Upload Tab */}
+          <TabsContent value="salary-upload" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Salary Details Upload */}
+              <Card className="bg-slate-900/50 border-slate-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center space-x-2">
+                    <FileText className="h-5 w-5 text-blue-400" />
+                    <span>1) Salary Details Excel</span>
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Upload monthly salary details Excel file
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="border-2 border-dashed border-slate-700 rounded-lg p-8 text-center bg-slate-800/30">
+                    <Upload className="h-10 w-10 text-slate-500 mx-auto mb-4" />
+                    <p className="text-slate-300 mb-4">
+                      {salaryUploadData.length > 0
+                        ? `${salaryUploadData.length} records parsed`
+                        : "Click to upload salary details Excel"}
+                    </p>
+                    <div className="flex justify-center">
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".xlsx, .xls, .csv"
+                          onChange={handleSalaryExcelUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          disabled={isUploadingSalary}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                        >
+                          {isUploadingSalary ? "Processing..." : "Choose File"}
+                        </Button>
+                      </div>
+                    </div>
+                    {salaryUploadData.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSalaryUploadData([])}
+                        className="mt-4 text-slate-400 hover:text-red-400"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h4 className="text-sm font-medium text-white mb-2">
+                      Required Columns:
+                    </h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      ID, S No, Name, UAN Number, ESIC IP Numbers, Company,
+                      Department, Status, CTC, Employer PF, Employer ESIC,
+                      Aadhar Card, DOJ, A/C No., IFSC Code, Actual Gross, Actual
+                      Basic, Actual HRA, Actual Conveyance, Actual Spl
+                      Allowance, Actual Payable Gross, Total Days, Days Worked,
+                      Earned Basic, Earned HRA, Earned Conveyance, Earned Spl
+                      Allowance, Earned GROSS, Payable PF Info, PF, ESIC, ESIC
+                      info, PT, Retention, Deduction, Advance, Any, Total
+                      Deduction, Net Salary, Incentive1, Incentive2, Final
+                      Salary, Bonus, Gratuity, Adjustment, TDS, Salary Paid
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Leave Details Upload */}
+              <Card className="bg-slate-900/50 border-slate-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center space-x-2">
+                    <CalendarDays className="h-5 w-5 text-orange-400" />
+                    <span>2) Leave Details Excel</span>
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Upload monthly leave details Excel file
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="border-2 border-dashed border-slate-700 rounded-lg p-8 text-center bg-slate-800/30">
+                    <Upload className="h-10 w-10 text-slate-500 mx-auto mb-4" />
+                    <p className="text-slate-300 mb-4">
+                      {leaveUploadData.length > 0
+                        ? `${leaveUploadData.length} records parsed`
+                        : "Click to upload leave details Excel"}
+                    </p>
+                    <div className="flex justify-center">
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".xlsx, .xls, .csv"
+                          onChange={handleLeaveExcelUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          disabled={isUploadingLeave}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10"
+                        >
+                          {isUploadingLeave ? "Processing..." : "Choose File"}
+                        </Button>
+                      </div>
+                    </div>
+                    {leaveUploadData.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setLeaveUploadData([])}
+                        className="mt-4 text-slate-400 hover:text-red-400"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h4 className="text-sm font-medium text-white mb-2">
+                      Note:
+                    </h4>
+                    <p className="text-xs text-slate-400">
+                      Leave details format will be provided later. You can still
+                      upload the file to see the record count.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Data Preview */}
+            {(salaryUploadData.length > 0 || leaveUploadData.length > 0) && (
+              <Card className="bg-slate-900/50 border-slate-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white">Uploaded Data Preview</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Showing first few records from the uploaded files
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="salary-preview">
+                    <TabsList className="bg-slate-800/50 border border-slate-700 mb-4">
+                      <TabsTrigger value="salary-preview">Salary Details ({salaryUploadData.length})</TabsTrigger>
+                      <TabsTrigger value="leave-preview">Leave Details ({leaveUploadData.length})</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="salary-preview">
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-slate-700 hover:bg-transparent">
+                              <TableHead className="text-slate-300">Name</TableHead>
+                              <TableHead className="text-slate-300">ID</TableHead>
+                              <TableHead className="text-slate-300">Department</TableHead>
+                              <TableHead className="text-slate-300">Net Salary</TableHead>
+                              <TableHead className="text-slate-300">Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {salaryUploadData.slice(0, 5).map((row, idx) => (
+                              <TableRow key={idx} className="border-slate-700 hover:bg-slate-800/30">
+                                <TableCell className="text-white">{row.Name || row.name || "N/A"}</TableCell>
+                                <TableCell className="text-slate-300">{row.ID || row.id || "N/A"}</TableCell>
+                                <TableCell className="text-slate-300">{row.Department || row.department || "N/A"}</TableCell>
+                                <TableCell className="text-green-400 font-medium">₹{row["Net Salary"] || row.net_salary || "0"}</TableCell>
+                                <TableCell className="text-slate-300">{row.Status || row.status || "N/A"}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                        {salaryUploadData.length > 5 && (
+                          <p className="text-xs text-slate-500 mt-4 text-center">
+                            Showing first 5 of {salaryUploadData.length} records
+                          </p>
+                        )}
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="leave-preview">
+                       <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-slate-700 hover:bg-transparent">
+                              {leaveUploadData.length > 0 && Object.keys(leaveUploadData[0]).slice(0, 5).map(key => (
+                                <TableHead key={key} className="text-slate-300">{key}</TableHead>
+                              ))}
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {leaveUploadData.slice(0, 5).map((row, idx) => (
+                              <TableRow key={idx} className="border-slate-700 hover:bg-slate-800/30">
+                                {Object.values(row).slice(0, 5).map((val: any, vIdx) => (
+                                  <TableCell key={vIdx} className="text-slate-300">{String(val)}</TableCell>
+                                ))}
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                         {leaveUploadData.length > 5 && (
+                          <p className="text-xs text-slate-500 mt-4 text-center">
+                            Showing first 5 of {leaveUploadData.length} records
+                          </p>
+                        )}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
 
