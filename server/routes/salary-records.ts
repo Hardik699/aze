@@ -1,5 +1,6 @@
 import { Router, RequestHandler } from "express";
 import { SalaryRecord } from "../models/SalaryRecord";
+import { Employee } from "../models/Employee";
 
 const router = Router();
 
@@ -276,7 +277,115 @@ const deleteSalaryRecord: RequestHandler = async (req, res) => {
   }
 };
 
+// Bulk upload salary records
+const bulkUploadSalaryRecords: RequestHandler = async (req, res) => {
+  try {
+    const { records, month, year } = req.body;
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: [] as any[],
+    };
+
+    if (!records || !Array.isArray(records)) {
+      return res.status(400).json({ success: false, error: "Invalid records format" });
+    }
+
+    for (const row of records) {
+      try {
+        // Find employee by ID or UAN Number
+        const id = row.ID || row.id;
+        const uan = row["UAN Number"] || row.uanNumber;
+
+        let employee = null;
+        if (id) {
+          employee = await Employee.findOne({ employeeId: String(id) });
+        }
+        if (!employee && uan) {
+          employee = await Employee.findOne({ uanNumber: String(uan) });
+        }
+
+        if (!employee) {
+          results.failed++;
+          results.errors.push({
+            row: row.Name || row.id || "Unknown",
+            error: `Employee not found (ID: ${id}, UAN: ${uan})`,
+          });
+          continue;
+        }
+
+        // Map fields
+        const recordData: any = {
+          employeeId: employee.id, // Internal DB ID or employeeId? Based on SalaryRecord model it's employeeId
+          month: month || row.Month || new Date().toISOString().substring(0, 7),
+          year: year || parseInt(row.Year) || new Date().getFullYear(),
+          totalWorkingDays: parseInt(row["Total Days"]) || 30,
+          actualWorkingDays: parseInt(row["Days Worked"]) || 0,
+
+          // Earnings (Actual Gross)
+          basic: parseFloat(row["Actual Basic"]) || 0,
+          hra: parseFloat(row["Actual HRA"]) || 0,
+          conveyance: parseFloat(row["Actual Conveyance"]) || 0,
+          specialAllowance: parseFloat(row["Actual Spl Allowance"]) || 0,
+          actualGross: parseFloat(row["Actual Payable Gross"]) || 0,
+          bonus: parseFloat(row.Bonus) || 0,
+          advanceAny: parseFloat(row["Advance Any"]) || 0,
+
+          // Earnings (Earned Gross)
+          basicEarned: parseFloat(row["Earned Basic"]) || 0,
+          hraEarned: parseFloat(row["Earned HRA"]) || 0,
+          conveyanceEarned: parseFloat(row["Earned Conveyance"]) || 0,
+          specialAllowanceEarned: parseFloat(row["Earned Spl Allowance"]) || 0,
+          earnedGross: parseFloat(row["Earned GROSS Payable"] || row["Earned GROSS"]) || 0,
+          incentiveEarned: parseFloat(row.Incentive1) || 0,
+          adjustmentEarned: parseFloat(row.Adjustment) || 0,
+
+          // Deductions
+          pf: parseFloat(row["PF Info"] || row.PF) || 0,
+          esic: parseFloat(row["ESIC info"] || row.ESIC) || 0,
+          pt: parseFloat(row.PT) || 0,
+          tds: parseFloat(row.TDS) || 0,
+          retention: parseFloat(row["Retention Deduction"] || row.Retention) || 0,
+          deductions: parseFloat(row["Total Deduction"]) || 0,
+
+          // Totals
+          netSalary: parseFloat(row["Salary Paid"] || row["Net Salary"]) || 0,
+          totalSalary: parseFloat(row["Salary Paid"] || row["Net Salary"]) || 0, // Fallback for backward compatibility
+        };
+
+        // Use internal employee._id if model expects it (checking models/SalaryRecord.ts:2, ISalaryRecord has employeeId: string)
+        // Usually, in this app employeeId refers to EMP-001 etc, let's keep it consistent with what the app uses.
+        // EmployeeDetailsPage uses e.id which is emp._id.
+        recordData.employeeId = employee._id.toString();
+
+        // Save or update
+        await SalaryRecord.findOneAndUpdate(
+          { employeeId: recordData.employeeId, month: recordData.month },
+          recordData,
+          { upsert: true, new: true }
+        );
+
+        results.success++;
+      } catch (err) {
+        results.failed++;
+        results.errors.push({
+          row: row.Name || row.id || "Unknown",
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+
+    res.json({ success: true, results });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Bulk upload failed",
+    });
+  }
+};
+
 router.post("/", createSalaryRecord);
+router.post("/bulk-upload", bulkUploadSalaryRecords);
 router.get("/", getSalaryRecords);
 router.get("/employee/:employeeId", getSalaryRecordsByEmployeeId);
 router.get("/month/:month/:year", getSalaryRecordsByMonth);

@@ -26,6 +26,9 @@ export interface ISalaryRecord extends Document {
   bonusEarned?: number;
   retentionBonusEarned?: number;
   advanceAnyEarned?: number;
+  actualGross?: number;
+  earnedGross?: number;
+  netSalary?: number;
   // Totals (legacy fields for backward compatibility)
   basicSalary?: number;
   deductions?: number;
@@ -88,6 +91,9 @@ const salaryRecordSchema = new Schema<ISalaryRecord>(
     bonusEarned: Number,
     retentionBonusEarned: Number,
     advanceAnyEarned: Number,
+    actualGross: Number,
+    earnedGross: Number,
+    netSalary: Number,
     // Totals (legacy fields for backward compatibility)
     basicSalary: Number,
     deductions: Number,
