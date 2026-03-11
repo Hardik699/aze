@@ -17,6 +17,7 @@ import { pcLaptopRouter } from "./routes/pc-laptop";
 import { attendanceRouter } from "./routes/attendance";
 import { leaveRequestsRouter } from "./routes/leave-requests";
 import { salaryRecordsRouter } from "./routes/salary-records";
+import { leaveRecordsRouter } from "./routes/leave-records";
 import { systemAssetsRouter } from "./routes/system-assets";
 import { clearDataRouter } from "./routes/clear-data";
 import { authRouter, seedUsers, seedSalaryRecords } from "./routes/auth";
@@ -88,6 +89,7 @@ export function createServer() {
   app.use("/api/attendance", attendanceRouter);
   app.use("/api/leave-requests", leaveRequestsRouter);
   app.use("/api/salary-records", salaryRecordsRouter);
+  app.use("/api/leave-records", leaveRecordsRouter);
   app.use("/api/system-assets", systemAssetsRouter);
 
   // Clear data API (for development/testing)

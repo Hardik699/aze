@@ -404,46 +404,89 @@ export default function HRDashboard() {
   };
 
   const handleBulkSubmit = async () => {
-    if (salaryUploadData.length === 0) {
-      toast.error("No salary data to submit. Please upload an Excel file first.");
+    if (salaryUploadData.length === 0 && leaveUploadData.length === 0) {
+      toast.error("No data to submit. Please upload at least one Excel file.");
       return;
     }
 
     if (!bulkMonth) {
-      toast.error("Please select a month and year for the salary records.");
+      toast.error("Please select a month and year for the records.");
       return;
     }
 
     setIsSubmittingBulk(true);
-    toast.loading("Processing bulk salary upload...");
+    toast.loading("Processing bulk upload...");
 
     try {
       const [yearStr, monthStr] = bulkMonth.split("-");
-      const response = await fetch("/api/salary-records/bulk-upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          records: salaryUploadData,
-          month: bulkMonth,
-          year: parseInt(yearStr),
-        }),
-      });
+      let salaryResults = { success: 0, failed: 0 };
+      let leaveResults = { success: 0, failed: 0 };
 
-      const result = await response.json();
+      // Upload salary records if available
+      if (salaryUploadData.length > 0) {
+        const salaryResponse = await fetch("/api/salary-records/bulk-upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            records: salaryUploadData,
+            month: bulkMonth,
+            year: parseInt(yearStr),
+          }),
+        });
+
+        const salaryResult = await salaryResponse.json();
+        if (salaryResult.success) {
+          salaryResults = salaryResult.results;
+        } else {
+          toast.error(`Salary upload failed: ${salaryResult.error || "Unknown error"}`);
+          setIsSubmittingBulk(false);
+          return;
+        }
+      }
+
+      // Upload leave records if available
+      if (leaveUploadData.length > 0) {
+        const leaveResponse = await fetch("/api/leave-records/bulk-upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            records: leaveUploadData,
+            month: bulkMonth,
+            year: parseInt(yearStr),
+          }),
+        });
+
+        const leaveResult = await leaveResponse.json();
+        if (leaveResult.success) {
+          leaveResults = leaveResult.results;
+        } else {
+          toast.error(`Leave upload failed: ${leaveResult.error || "Unknown error"}`);
+          setIsSubmittingBulk(false);
+          return;
+        }
+      }
+
       toast.dismiss();
 
-      if (result.success) {
-        toast.success(`Successfully processed ${result.results.success} records!`);
-        if (result.results.failed > 0) {
-          toast.warning(`${result.results.failed} records failed. Check console for details.`);
-          console.warn("Bulk upload errors:", result.results.errors);
-        }
-        // Clear data after successful upload
-        setSalaryUploadData([]);
-        setLeaveUploadData([]);
-      } else {
-        toast.error(`Upload failed: ${result.error || "Unknown error"}`);
+      // Show combined results
+      const totalSuccess = salaryResults.success + leaveResults.success;
+      const totalFailed = salaryResults.failed + leaveResults.failed;
+
+      if (totalSuccess > 0) {
+        const messages = [];
+        if (salaryResults.success > 0) messages.push(`${salaryResults.success} salary records`);
+        if (leaveResults.success > 0) messages.push(`${leaveResults.success} leave records`);
+        toast.success(`Successfully processed: ${messages.join(", ")}`);
       }
+
+      if (totalFailed > 0) {
+        toast.warning(`${totalFailed} records failed. Check console for details.`);
+        console.warn("Bulk upload errors:", { salary: salaryResults, leave: leaveResults });
+      }
+
+      // Clear data after successful upload
+      setSalaryUploadData([]);
+      setLeaveUploadData([]);
     } catch (error) {
       toast.dismiss();
       console.error("Bulk upload error:", error);
@@ -3459,11 +3502,14 @@ Generated on: ${new Date().toLocaleString()}
                   </div>
                   <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
                     <h4 className="text-sm font-medium text-white mb-2">
-                      Note:
+                      Required Columns:
                     </h4>
-                    <p className="text-xs text-slate-400">
-                      Leave details format will be provided later. You can still
-                      upload the file to see the record count.
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      ID, S.No., Name, DOJ, DOC, DOL, PL TOTAL LEAVE TAKEN, CL
+                      TOTAL LEAVE TAKEN, SL TOTAL LEAVE TAKEN, PL LEAVE BALANCE,
+                      CL LEAVE BALANCE, SL LEAVE BALANCE, PL Total Leave In The
+                      Account, CL Total Leave In The Account, SL Total Leave In
+                      The Account
                     </p>
                   </div>
                 </CardContent>
@@ -3493,7 +3539,7 @@ Generated on: ${new Date().toLocaleString()}
                     </div>
                     <Button
                       onClick={handleBulkSubmit}
-                      disabled={isSubmittingBulk || salaryUploadData.length === 0}
+                      disabled={isSubmittingBulk || (salaryUploadData.length === 0 && leaveUploadData.length === 0)}
                       className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
                     >
                       {isSubmittingBulk ? "Processing..." : "Submit and Save Data"}
