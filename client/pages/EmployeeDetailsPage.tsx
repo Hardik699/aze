@@ -465,6 +465,7 @@ export default function EmployeeDetailsPage() {
   const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [salaryRecords, setSalaryRecords] = useState<SalaryRecord[]>([]);
+  const [leaveRecords, setLeaveRecords] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Employee>>({});
   const [editPhotoPreview, setEditPhotoPreview] = useState<string>("");
@@ -663,13 +664,20 @@ export default function EmployeeDetailsPage() {
               status: 500,
             });
           }),
+          fetch("/api/leave-records").catch((err) => {
+            console.error("Failed to fetch leave records:", err);
+            return new Response(JSON.stringify({ success: false, data: [] }), {
+              status: 500,
+            });
+          }),
         ];
 
-        const [empRes, deptRes, salaryRes] = await Promise.all(requests);
+        const [empRes, deptRes, salaryRes, leaveRes] = await Promise.all(requests);
 
         let employees: Employee[] = [];
         let dept: Department[] = [];
         let salary: SalaryRecord[] = [];
+        let leave: any[] = [];
 
         if (empRes.ok) {
           try {
@@ -714,10 +722,26 @@ export default function EmployeeDetailsPage() {
             console.error("Failed to parse salary records response:", e);
           }
         }
+        if (leaveRes.ok) {
+          try {
+            const leaveData = await leaveRes.json();
+            if (leaveData.success && leaveData.data) {
+              // Normalize leave records: keep _id and map to id for compatibility
+              leave = leaveData.data.map((l: any) => ({
+                ...l,
+                _id: l._id, // Keep original MongoDB _id
+                id: l._id || l.id, // Also set id field
+              }));
+            }
+          } catch (e) {
+            console.error("Failed to parse leave records response:", e);
+          }
+        }
 
         setAllEmployees(employees);
         setDepartments(dept);
         setSalaryRecords(salary);
+        setLeaveRecords(leave);
 
         if (employeeId) {
           const found = employees.find(
@@ -2821,11 +2845,20 @@ export default function EmployeeDetailsPage() {
 
                         {/* Salary Slip Detail */}
                         <div className="bg-white rounded-lg overflow-hidden shadow-xl">
-                          <SalarySlip
-                            employee={employee}
-                            record={record}
-                            className="w-full"
-                          />
+                          {(() => {
+                            // Find matching leave record for this salary record
+                            const matchingLeaveRecord = leaveRecords.find(
+                              (lr) => lr.employeeId === record.employeeId && lr.month === record.month
+                            );
+                            return (
+                              <SalarySlip
+                                employee={employee}
+                                record={record}
+                                leaveRecord={matchingLeaveRecord}
+                                className="w-full"
+                              />
+                            );
+                          })()}
                         </div>
                       </div>
                     ))}

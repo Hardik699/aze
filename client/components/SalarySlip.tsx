@@ -4,10 +4,11 @@ import { cn, convertNumberToWords } from "@/lib/utils";
 interface SalarySlipProps {
   employee: any;
   record: any;
+  leaveRecord?: any;
   className?: string;
 }
 
-export const SalarySlip: React.FC<SalarySlipProps> = ({ employee, record, className }) => {
+export const SalarySlip: React.FC<SalarySlipProps> = ({ employee, record, leaveRecord, className }) => {
   const formatCurrency = (val?: number) => {
     return (val || 0).toLocaleString("en-IN", {
       minimumFractionDigits: 2,
@@ -118,6 +119,43 @@ export const SalarySlip: React.FC<SalarySlipProps> = ({ employee, record, classN
           </tr>
         </tfoot>
       </table>
+
+      {/* Leave Details Section */}
+      {leaveRecord && (
+        <div className="mt-6">
+          <h2 className="text-lg font-bold text-[#1e40af] mb-4 border-b-2 border-[#4a86e8] pb-1 uppercase">Leave Details</h2>
+          <table className="w-full border-collapse border border-slate-300">
+            <thead className="bg-[#4a86e8] text-white">
+              <tr>
+                <th className="border border-slate-300 px-2 py-1 uppercase font-bold text-center w-1/4">Leave Type</th>
+                <th className="border border-slate-300 px-2 py-1 uppercase font-bold text-center w-1/4">Total Leave In The Account</th>
+                <th className="border border-slate-300 px-2 py-1 uppercase font-bold text-center w-1/4">Leave Availed</th>
+                <th className="border border-slate-300 px-2 py-1 uppercase font-bold text-center w-1/4">Subsisting Leave</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border border-slate-300 px-4 py-1 font-bold">PL (Paid Leave)</td>
+                <td className="border border-slate-300 px-4 py-1 text-center">{leaveRecord.plTotalLeaveInAccount || 0}</td>
+                <td className="border border-slate-300 px-4 py-1 text-center">{leaveRecord.plLeaveAvailed || 0}</td>
+                <td className="border border-slate-300 px-4 py-1 text-center">{leaveRecord.plSubsistingLeave || 0}</td>
+              </tr>
+              <tr>
+                <td className="border border-slate-300 px-4 py-1 font-bold">CL (Casual Leave)</td>
+                <td className="border border-slate-300 px-4 py-1 text-center">{leaveRecord.clTotalLeaveInAccount || 0}</td>
+                <td className="border border-slate-300 px-4 py-1 text-center">{leaveRecord.clLeaveAvailed || 0}</td>
+                <td className="border border-slate-300 px-4 py-1 text-center">{leaveRecord.clSubsistingLeave || 0}</td>
+              </tr>
+              <tr>
+                <td className="border border-slate-300 px-4 py-1 font-bold">SL (Sick Leave)</td>
+                <td className="border border-slate-300 px-4 py-1 text-center">{leaveRecord.slTotalLeaveInAccount || 0}</td>
+                <td className="border border-slate-300 px-4 py-1 text-center">{leaveRecord.slLeaveAvailed || 0}</td>
+                <td className="border border-slate-300 px-4 py-1 text-center">{leaveRecord.slSubsistingLeave || 0}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

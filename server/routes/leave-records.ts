@@ -211,26 +211,26 @@ const bulkUploadLeaveRecords: RequestHandler = async (req, res) => {
           continue;
         }
 
-        // Map fields based on Excel column names
+        // Map fields based on Excel column names to salary slip field names
         const recordData: any = {
           employeeId: employee._id.toString(),
           month: month || new Date().toISOString().substring(0, 7),
           year: year || new Date().getFullYear(),
 
           // Paid Leave (PL)
-          plTotalLeaveTaken: parseFloat(row["PL TOTAL LEAVE TAKEN"]) || 0,
-          plLeaveBalance: parseFloat(row["PL LEAVE BALANCE"]) || 0,
-          plTotalLeaveInAccount: parseFloat(row["PL Total Leave In The Account"]) || 0,
+          plTotalLeaveInAccount: parseFloat(row["Total Leave In The Account (PL)"]) || parseFloat(row["PL Total Leave In The Account"]) || 0,
+          plLeaveAvailed: parseFloat(row["TOTAL LEAVE TAKEN (PL)"]) || parseFloat(row["PL TOTAL LEAVE TAKEN"]) || 0,
+          plSubsistingLeave: parseFloat(row["LEAVE BALANCE (PL)"]) || parseFloat(row["PL LEAVE BALANCE"]) || 0,
 
           // Casual Leave (CL)
-          clTotalLeaveTaken: parseFloat(row["CL TOTAL LEAVE TAKEN"]) || 0,
-          clLeaveBalance: parseFloat(row["CL LEAVE BALANCE"]) || 0,
-          clTotalLeaveInAccount: parseFloat(row["CL Total Leave In The Account"]) || 0,
+          clTotalLeaveInAccount: parseFloat(row["Total Leave In The Account (CL)"]) || parseFloat(row["CL Total Leave In The Account"]) || 0,
+          clLeaveAvailed: parseFloat(row["TOTAL LEAVE TAKEN (CL)"]) || parseFloat(row["CL TOTAL LEAVE TAKEN"]) || 0,
+          clSubsistingLeave: parseFloat(row["LEAVE BALANCE (CL)"]) || parseFloat(row["CL LEAVE BALANCE"]) || 0,
 
           // Sick Leave (SL)
-          slTotalLeaveTaken: parseFloat(row["SL TOTAL LEAVE TAKEN"]) || 0,
-          slLeaveBalance: parseFloat(row["SL LEAVE BALANCE"]) || 0,
-          slTotalLeaveInAccount: parseFloat(row["SL Total Leave In The Account"]) || 0,
+          slTotalLeaveInAccount: parseFloat(row["Total Leave In The Account (SL)"]) || parseFloat(row["SL Total Leave In The Account"]) || 0,
+          slLeaveAvailed: parseFloat(row["TOTAL LEAVE TAKEN (SL)"]) || parseFloat(row["SL TOTAL LEAVE TAKEN"]) || 0,
+          slSubsistingLeave: parseFloat(row["LEAVE BALANCE (SL)"]) || parseFloat(row["SL LEAVE BALANCE"]) || 0,
         };
 
         // Save or update

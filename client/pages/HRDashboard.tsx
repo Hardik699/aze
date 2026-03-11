@@ -3501,16 +3501,31 @@ Generated on: ${new Date().toLocaleString()}
                     )}
                   </div>
                   <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                    <h4 className="text-sm font-medium text-white mb-2">
-                      Required Columns:
+                    <h4 className="text-sm font-medium text-white mb-3">
+                      Required Columns & Salary Slip Mapping:
                     </h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      ID, S.No., Name, DOJ, DOC, DOL, PL TOTAL LEAVE TAKEN, CL
-                      TOTAL LEAVE TAKEN, SL TOTAL LEAVE TAKEN, PL LEAVE BALANCE,
-                      CL LEAVE BALANCE, SL LEAVE BALANCE, PL Total Leave In The
-                      Account, CL Total Leave In The Account, SL Total Leave In
-                      The Account
-                    </p>
+                    <div className="space-y-2 text-xs text-slate-300">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <div>
+                          <p className="font-bold text-blue-400 mb-1">Paid Leave (PL):</p>
+                          <p>Total Leave In The Account (PL) → Total Leave In The Account</p>
+                          <p>TOTAL LEAVE TAKEN (PL) → Leave Availed</p>
+                          <p>LEAVE BALANCE (PL) → Subsisting Leave</p>
+                        </div>
+                        <div>
+                          <p className="font-bold text-blue-400 mb-1">Casual Leave (CL):</p>
+                          <p>Total Leave In The Account (CL) → Total Leave In The Account</p>
+                          <p>TOTAL LEAVE TAKEN (CL) → Leave Availed</p>
+                          <p>LEAVE BALANCE (CL) → Subsisting Leave</p>
+                        </div>
+                        <div>
+                          <p className="font-bold text-blue-400 mb-1">Sick Leave (SL):</p>
+                          <p>Total Leave In The Account (SL) → Total Leave In The Account</p>
+                          <p>TOTAL LEAVE TAKEN (SL) → Leave Availed</p>
+                          <p>LEAVE BALANCE (SL) → Subsisting Leave</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

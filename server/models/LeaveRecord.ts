@@ -5,17 +5,17 @@ export interface ILeaveRecord extends Document {
   month: string; // YYYY-MM format
   year: number;
   // Paid Leave (PL)
-  plTotalLeaveTaken?: number;
-  plLeaveBalance?: number;
-  plTotalLeaveInAccount?: number;
+  plTotalLeaveInAccount?: number; // Total Leave In The Account
+  plLeaveAvailed?: number;         // Leave Availed (from TOTAL LEAVE TAKEN)
+  plSubsistingLeave?: number;      // Subsisting Leave (from LEAVE BALANCE)
   // Casual Leave (CL)
-  clTotalLeaveTaken?: number;
-  clLeaveBalance?: number;
-  clTotalLeaveInAccount?: number;
+  clTotalLeaveInAccount?: number; // Total Leave In The Account
+  clLeaveAvailed?: number;         // Leave Availed (from TOTAL LEAVE TAKEN)
+  clSubsistingLeave?: number;      // Subsisting Leave (from LEAVE BALANCE)
   // Sick Leave (SL)
-  slTotalLeaveTaken?: number;
-  slLeaveBalance?: number;
-  slTotalLeaveInAccount?: number;
+  slTotalLeaveInAccount?: number; // Total Leave In The Account
+  slLeaveAvailed?: number;         // Leave Availed (from TOTAL LEAVE TAKEN)
+  slSubsistingLeave?: number;      // Subsisting Leave (from LEAVE BALANCE)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,17 +26,17 @@ const leaveRecordSchema = new Schema<ILeaveRecord>(
     month: { type: String, required: true },
     year: { type: Number, required: true },
     // Paid Leave (PL)
-    plTotalLeaveTaken: Number,
-    plLeaveBalance: Number,
     plTotalLeaveInAccount: Number,
+    plLeaveAvailed: Number,
+    plSubsistingLeave: Number,
     // Casual Leave (CL)
-    clTotalLeaveTaken: Number,
-    clLeaveBalance: Number,
     clTotalLeaveInAccount: Number,
+    clLeaveAvailed: Number,
+    clSubsistingLeave: Number,
     // Sick Leave (SL)
-    slTotalLeaveTaken: Number,
-    slLeaveBalance: Number,
     slTotalLeaveInAccount: Number,
+    slLeaveAvailed: Number,
+    slSubsistingLeave: Number,
   },
   { timestamps: true }
 );
