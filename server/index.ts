@@ -18,6 +18,7 @@ import { attendanceRouter } from "./routes/attendance";
 import { leaveRequestsRouter } from "./routes/leave-requests";
 import { salaryRecordsRouter } from "./routes/salary-records";
 import { leaveRecordsRouter } from "./routes/leave-records";
+import { salarySlipRecordsRouter } from "./routes/salary-slip-records";
 import { systemAssetsRouter } from "./routes/system-assets";
 import { clearDataRouter } from "./routes/clear-data";
 import { authRouter, seedUsers, seedSalaryRecords } from "./routes/auth";
